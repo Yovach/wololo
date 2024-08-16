@@ -1,0 +1,22 @@
+{
+  "name": "wololo",
+  "private": true,
+  "type": "module",
+  "description": "Project to provide an interface for converting files (images, videos)",
+  "dependencies": {
+    "@hono/vite-dev-server": "^0.14.0",
+    "@hono/zod-validator": "^0.2.2",
+    "@types/fluent-ffmpeg": "^2.1.25",
+    "fluent-ffmpeg": "^2.1.3",
+    "hono": "^4.5.5",
+    "honox": "^0.1.24",
+    "vite": "^5.4.1",
+    "zod": "^3.23.8"
+  },
+  "scripts": {
+    "dev": "vite dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

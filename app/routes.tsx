@@ -2,8 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Context, Hono } from "hono";
 import z from "zod";
 
-// @deno-types="npm:@types/fluent-ffmpeg"
-import { Form } from "./components/form.tsx";
+import { Form } from "./islands/form.tsx";
 import { layoutRenderer } from "./middlewares/jsx.tsx";
 
 const app = new Hono();
