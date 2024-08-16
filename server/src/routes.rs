@@ -1,3 +1,56 @@
+use std::any::Any;
+
+use axum::{extract::Multipart, response::Html, Form};
+use serde::Deserialize;
+
+pub async fn root() -> Html<&'static str> {
+    Html(
+        r#"
+        <!doctype html>
+        <html>
+            <head></head>
+            <body>
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <select name="format">
+                        <option>JPEG</option>
+                        <option>PNG</option>
+                    </select>
+
+                    <input type="file" name="file" />
+                    <input type="submit" value="Subscribe!">
+
+                </form>
+            </body>
+        </html>
+        "#,
+    )
+}
+
 pub async fn convert_video() -> &'static str {
-    return "hello convert video bro!";
+    "hello convert video bro!"
+}
+
+#[derive(Deserialize, Debug)]
+#[allow(dead_code)]
+pub struct Input {
+    name: String,
+    email: String,
+}
+
+pub async fn accept_form(mut multipart: Multipart) {
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.name().unwrap().to_string();
+        println!("handling {name}");
+        if let Some(file_name) = field.file_name() {
+            let file_name = file_name.to_string();
+            let content_type = field.content_type().unwrap().to_string();
+
+            let data = field.bytes().await.unwrap();
+            println!(
+                "Length of `{name}` (`{file_name}`: `{content_type}`) is {} bytes",
+                data.len()
+            );
+        }
+    }
+    // dbg!(multipart);
 }
