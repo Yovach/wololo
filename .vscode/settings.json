@@ -1,0 +1,16 @@
+{
+  "deno.enablePaths": [
+    "./"
+  ],
+  "deno.enable": true,
+  "editor.inlayHints.enabled": "off",
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  }
+}
