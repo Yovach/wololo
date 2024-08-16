@@ -1,3 +1,2 @@
-tmp/
+# prod
 dist/
-node_modules/
