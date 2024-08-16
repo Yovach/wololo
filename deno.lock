@@ -2,18 +2,56 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@hono/hono@^4.5.5": "jsr:@hono/hono@4.5.5"
+      "jsr:@hono/hono@^4.5.5": "jsr:@hono/hono@4.5.5",
+      "npm:@types/fluent-ffmpeg": "npm:@types/fluent-ffmpeg@2.1.25",
+      "npm:fluent-ffmpeg": "npm:fluent-ffmpeg@2.1.3",
+      "npm:fluent-ffmpeg@^2.1.3": "npm:fluent-ffmpeg@2.1.3"
     },
     "jsr": {
       "@hono/hono@4.5.5": {
         "integrity": "e5a63b5f535475cd80974b65fed23a138d0cbb91fe1cc9a17a7c7278e835c308"
+      }
+    },
+    "npm": {
+      "@types/fluent-ffmpeg@2.1.25": {
+        "integrity": "sha512-a9/Jtv/RVaCG4lUwWIcuClWE5eXJFoFS/oHOecOv/RS8n+lQdJzcJVmDlxA8Xbk4B82YpO88Dijcoljb6sYTcA==",
+        "dependencies": {
+          "@types/node": "@types/node@18.16.19"
+        }
+      },
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
+        "dependencies": {}
+      },
+      "async@0.2.10": {
+        "integrity": "sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ==",
+        "dependencies": {}
+      },
+      "fluent-ffmpeg@2.1.3": {
+        "integrity": "sha512-Be3narBNt2s6bsaqP6Jzq91heDgOEaDCJAXcE3qcma/EJBSy5FB4cvO31XBInuAuKBx8Kptf8dkhjK0IOru39Q==",
+        "dependencies": {
+          "async": "async@0.2.10",
+          "which": "which@1.3.1"
+        }
+      },
+      "isexe@2.0.0": {
+        "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==",
+        "dependencies": {}
+      },
+      "which@1.3.1": {
+        "integrity": "sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==",
+        "dependencies": {
+          "isexe": "isexe@2.0.0"
+        }
       }
     }
   },
   "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@hono/hono@^4.5.5"
+      "jsr:@hono/hono@^4.5.5",
+      "npm:@types/fluent-ffmpeg@^2.1.25",
+      "npm:fluent-ffmpeg@^2.1.3"
     ]
   }
 }

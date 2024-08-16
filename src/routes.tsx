@@ -1,6 +1,9 @@
 import type { FC } from "hono/jsx";
 import { Context, Hono } from "hono";
 
+// @deno-types="npm:@types/fluent-ffmpeg"
+import ffmpeg from "npm:fluent-ffmpeg";
+
 const app = new Hono();
 
 const Layout: FC = (props) => {
@@ -27,6 +30,14 @@ const Top: FC<{ messages: string[] }> = (props: {
 };
 
 app.get("/", (c: Context) => {
+  const messages = ["Good Morning", "Good Evening", "Good Night"];
+  return c.html(<Top messages={messages} />);
+});
+
+app.get("/test", async (c: Context) => {
+  ffmpeg("./Big_Buck_Bunny_180_10s.webm")
+    .output("./Big_Buck_Bunny_180_10s.avi").run();
+  // const file = await Deno.readFile("./Big_Buck_Bunny_180_10s.webm");
   const messages = ["Good Morning", "Good Evening", "Good Night"];
   return c.html(<Top messages={messages} />);
 });
