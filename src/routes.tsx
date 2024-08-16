@@ -1,45 +1,34 @@
-import type { FC } from "hono/jsx";
+import { zValidator } from "@hono/zod-validator";
 import { Context, Hono } from "hono";
+import z from "zod";
 
 // @deno-types="npm:@types/fluent-ffmpeg"
-import ffmpeg from "npm:fluent-ffmpeg";
+import { Form } from "./components/form.tsx";
+import { layoutRenderer } from "./middlewares/jsx.tsx";
 
 const app = new Hono();
 
-const Layout: FC = (props) => {
-  return (
-    <html>
-      <body>{props.children}</body>
-    </html>
+app.post(
+  "/",
+  zValidator(
+    "form",
+    z.object({
+      output: z.string(),
+    }),
+  ),
+  async (c: Context) => {
+    const x = c.req.valid("form");
+    console.log(x);
+  },
+);
+
+app.get("/", layoutRenderer, (c: Context) => {
+  // ffmpeg("./Big_Buck_Bunny_180_10s.webm")
+  //   .output("./Big_Buck_Bunny_180_10s.avi").run();
+  // // const file = await Deno.readFile("./Big_Buck_Bunny_180_10s.webm");
+  return c.render(
+    <Form />,
   );
-};
-
-const Top: FC<{ messages: string[] }> = (props: {
-  messages: string[];
-}) => {
-  return (
-    <Layout>
-      <h1>Hello Hono!</h1>
-      <ul>
-        {props.messages.map((message) => {
-          return <li>{message}!!</li>;
-        })}
-      </ul>
-    </Layout>
-  );
-};
-
-app.get("/", (c: Context) => {
-  const messages = ["Good Morning", "Good Evening", "Good Night"];
-  return c.html(<Top messages={messages} />);
-});
-
-app.get("/test", async (c: Context) => {
-  ffmpeg("./Big_Buck_Bunny_180_10s.webm")
-    .output("./Big_Buck_Bunny_180_10s.avi").run();
-  // const file = await Deno.readFile("./Big_Buck_Bunny_180_10s.webm");
-  const messages = ["Good Morning", "Good Evening", "Good Night"];
-  return c.html(<Top messages={messages} />);
 });
 
 export default app;

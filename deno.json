@@ -1,8 +1,10 @@
 {
   "imports": {
+    "@hono/zod-validator": "npm:@hono/zod-validator@^0.2.2",
     "@types/fluent-ffmpeg": "npm:@types/fluent-ffmpeg@^2.1.25",
     "fluent-ffmpeg": "npm:fluent-ffmpeg@^2.1.3",
-    "hono": "jsr:@hono/hono@^4.5.5"
+    "hono": "jsr:@hono/hono@^4.5.5",
+    "zod": "npm:zod@^3.23.8"
   },
   "fmt": {
     "indentWidth": 2,
