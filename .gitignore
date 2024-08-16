@@ -1,2 +1,4 @@
 # prod
 dist/
+
+server/target/
