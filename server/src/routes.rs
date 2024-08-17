@@ -1,6 +1,6 @@
 use std::any::Any;
 
-use axum::{extract::Multipart, response::Html, Form};
+use axum::{body::Bytes, extract::Multipart, response::Html, Form};
 use serde::Deserialize;
 
 pub async fn root() -> Html<&'static str> {
@@ -37,7 +37,7 @@ pub struct Input {
     email: String,
 }
 
-pub async fn accept_form(mut multipart: Multipart) {
+pub async fn accept_form(mut multipart: Multipart) -> &'static str {
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.name().unwrap().to_string();
         println!("handling {name}");
@@ -45,12 +45,19 @@ pub async fn accept_form(mut multipart: Multipart) {
             let file_name = file_name.to_string();
             let content_type = field.content_type().unwrap().to_string();
 
-            let data = field.bytes().await.unwrap();
+            let bytes = field.bytes().await;
+            if bytes.is_err() {
+                println!("{:?}", bytes.err());
+                return "error!";
+            }
+
+            let data = bytes.unwrap();
             println!(
                 "Length of `{name}` (`{file_name}`: `{content_type}`) is {} bytes",
                 data.len()
             );
         }
     }
+    return "dkddj"
     // dbg!(multipart);
 }
