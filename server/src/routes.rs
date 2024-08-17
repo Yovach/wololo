@@ -1,6 +1,7 @@
-use std::any::Any;
+use std::{any::Any, fs::File, io::Write};
 
 use axum::{body::Bytes, extract::Multipart, response::Html, Form};
+use nanoid::nanoid;
 use serde::Deserialize;
 
 pub async fn root() -> Html<&'static str> {
@@ -51,11 +52,23 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
                 return "error!";
             }
 
+            let file_id = nanoid!();
+
             let data = bytes.unwrap();
             println!(
                 "Length of `{name}` (`{file_name}`: `{content_type}`) is {} bytes",
                 data.len()
             );
+
+            let file_path = format!("../tmp/{}", file_id);
+
+            let mut file = File::create_new(file_path).expect("i can't create file");
+            let file_content = &data.to_vec();
+
+            if let Err(_) = file.write_all(file_content) {
+                return "i was not able to write file";
+            }
+
         }
     }
     return "dkddj"
