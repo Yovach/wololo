@@ -1,8 +1,15 @@
 use std::{fs::File, io::Write, process::Command};
 
-use axum::{extract::Multipart, response::Html};
+use axum::{
+    body::{Body, Bytes},
+    extract::Multipart,
+    http::header,
+    response::{self, Html, IntoResponse},
+};
+use http::Response;
 use nanoid::nanoid;
 use serde::Deserialize;
+use tokio::fs;
 
 use crate::{formats::SupportedFormat, tmp_file::TmpFile};
 
@@ -41,9 +48,9 @@ pub struct Input {
     email: String,
 }
 
-pub async fn accept_form(mut multipart: Multipart) -> &'static str {
+pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
     let mut tmp_file: Option<TmpFile> = None;
-    let mut format: Option<SupportedFormat> = None;
+    let mut output_format: Option<SupportedFormat> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
         let field_name = field.name().unwrap();
         match field_name {
@@ -54,7 +61,7 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
                 let bytes = field.bytes().await;
                 if let Err(err) = bytes {
                     println!("{:?}", err);
-                    return "error!";
+                    return "error!".into_response();
                 }
 
                 let file_id = nanoid!();
@@ -74,9 +81,9 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
                 let text = field.text().await;
                 if let Ok(value) = text {
                     if let Ok(supported_format) = SupportedFormat::from_value(value) {
-                        format = Some(supported_format)
+                        output_format = Some(supported_format)
                     } else {
-                        return "invalid format";
+                        return "invalid format".into_response();
                     }
                 }
             }
@@ -87,12 +94,14 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
     }
 
     if tmp_file.is_none() {
-        return "invalid file";
+        return "invalid file".into_response();
     }
 
-    if format.is_none() {
-        return "invalid format";
+    if output_format.is_none() {
+        return "invalid format".into_response();
     }
+
+    let output_format = &output_format.unwrap();
 
     let file_data = tmp_file.unwrap();
 
@@ -101,20 +110,32 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
     let mut file = File::create_new(file_path).expect("i can't create file");
     let file_content = file_data.data.to_vec();
     if let Err(_) = file.write_all(&file_content) {
-        return "i was not able to write file";
+        return "i was not able to write file".into_response();
     }
 
     let mut output_path = file_path.to_string();
     output_path.push_str(".output");
 
-    let output_path = file_data.path.to_string() + ".output." + &format.unwrap().to_str();
-    println!("input: {:?}, output: {:?}", file_data.path, output_path);
+    let output_path = file_data.path.to_string() + ".output." + output_format.to_str();
+    println!("input: {:?}, output: {:?}", file_data.path, &output_path);
 
     let output = Command::new("ffmpeg")
         .arg("-i")
         .arg(file_data.path)
-        .arg(output_path)
+        .arg(&output_path)
         .spawn()
-        .expect("I expected a result here");
-    return "dkddj";
+        .expect("I expected a result here")
+        .wait_with_output();
+
+    let converted_file = fs::read(output_path).await.expect("can't read output file");
+
+    let file_name = file_data.name + "." + output_format.to_str();
+    let content_disposition = &format!("attachement; filename=\"{}\"", file_name);
+
+    let headers = response::AppendHeaders([
+        (header::CONTENT_TYPE, "application/octet-stream"),
+        (header::CONTENT_DISPOSITION, content_disposition.as_str()),
+    ]);
+
+    return (headers, Bytes::from(converted_file)).into_response();
 }
