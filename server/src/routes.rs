@@ -4,6 +4,8 @@ use axum::{extract::Multipart, response::Html};
 use nanoid::nanoid;
 use serde::Deserialize;
 
+use crate::tmp_file::TmpFile;
+
 pub async fn root() -> Html<&'static str> {
     Html(
         r#"
@@ -39,6 +41,8 @@ pub struct Input {
 }
 
 pub async fn accept_form(mut multipart: Multipart) -> &'static str {
+    let mut file: Option<TmpFile> = None;
+    let mut format: Option<String> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.name().unwrap().to_string();
         println!("handling {name}");
@@ -63,25 +67,33 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
             let folder: String = "../tmp/".to_string();
             let file_path: &str = &(folder.clone() + file_id.as_str()).to_string();
 
-            let mut file = File::create_new(file_path).expect("i can't create file");
-            let file_content = &data.to_vec();
+            file = Some(TmpFile {
+                content_type: content_type,
+                name: name,
+                path: file_path.to_string(),
+                data: data,
 
-            if let Err(_) = file.write_all(file_content) {
-                return "i was not able to write file";
-            }
+            });
 
-            let output_path: &str = &(folder.clone() + file_id.as_str() + ".avi").to_string();
+            // let mut file = File::create_new(file_path).expect("i can't create file");
+            // let file_content = &data.to_vec();
 
-            println!("input: {:?}, output: {:?}", file_path, output_path);
+            // if let Err(_) = file.write_all(file_content) {
+            //     return "i was not able to write file";
+            // }
 
-            let output = Command::new("ffmpeg")
-                .arg("-i")
-                .arg(file_path)
-                .arg(output_path)
-                .spawn()
-                .expect("I expected a result here");
+            // let output_path: &str = &(folder.clone() + file_id.as_str() + ".avi").to_string();
 
-            println!("{:?}", output);
+            // println!("input: {:?}, output: {:?}", file_path, output_path);
+
+            // let output = Command::new("ffmpeg")
+            //     .arg("-i")
+            //     .arg(file_path)
+            //     .arg(output_path)
+            //     .spawn()
+            //     .expect("I expected a result here");
+
+            // println!("{:?}", output);
         }
     }
     return "dkddj";
