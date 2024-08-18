@@ -5,13 +5,17 @@ use axum::{
     extract::Multipart,
     http::header,
     response::{self, Html, IntoResponse},
+    Json,
 };
 use http::Response;
 use nanoid::nanoid;
-use serde::Deserialize;
+use serde::Serialize;
 use tokio::fs;
 
-use crate::{formats::SupportedFormat, tmp_file::TmpFile};
+use crate::{
+    formats::{self, SUPPORTED_FORMATS},
+    tmp_file::TmpFile,
+};
 
 pub async fn root() -> Html<&'static str> {
     Html(
@@ -33,8 +37,7 @@ pub async fn root() -> Html<&'static str> {
                     </select>
 
                     <input type="file" name="file" />
-                    <input type="submit" value="Subscribe!">
-
+                    <input type="submit" value="Send">
                 </form>
             </body>
         </html>
@@ -42,20 +45,20 @@ pub async fn root() -> Html<&'static str> {
     )
 }
 
-pub async fn convert_video() -> &'static str {
-    "hello convert video bro!"
+#[derive(Serialize)]
+pub struct AvailableFormatsResp {
+    formats: &'static[&'static str],
 }
 
-#[derive(Deserialize, Debug)]
-#[allow(dead_code)]
-pub struct Input {
-    name: String,
-    email: String,
+pub async fn available_formats() -> Json<AvailableFormatsResp> {
+    return Json(AvailableFormatsResp {
+        formats: SUPPORTED_FORMATS,
+    });
 }
 
 pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
     let mut tmp_file: Option<TmpFile> = None;
-    let mut output_format: Option<SupportedFormat> = None;
+    let mut output_format: Option<String> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
         let field_name = field.name().unwrap();
         match field_name {
@@ -85,11 +88,11 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
             "format" => {
                 let text = field.text().await;
                 if let Ok(value) = text {
-                    if let Ok(supported_format) = SupportedFormat::from_value(value) {
-                        output_format = Some(supported_format)
-                    } else {
+                    if !formats::SUPPORTED_FORMATS.contains(&value.as_str()) {
                         return "invalid format".into_response();
                     }
+
+                    output_format = Some(value);
                 }
             }
             _ => {
@@ -118,7 +121,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
         return "i was not able to write file".into_response();
     }
 
-    let output_path = file_path.to_string() + ".output." + output_format.to_str();
+    let output_path = file_path.to_string() + ".output." + &output_format;
 
     if let Err(err) = Command::new("ffmpeg")
         .arg("-loglevel")
@@ -138,7 +141,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
         .await
         .expect("can't read output file");
 
-    let file_name = file_data.name + "." + output_format.to_str();
+    let file_name = file_data.name + "." + output_format;
     let content_disposition = &format!("attachement; filename=\"{}\"", file_name);
 
     let headers = response::AppendHeaders([

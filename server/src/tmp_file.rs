@@ -8,9 +8,3 @@ pub struct TmpFile {
 
     pub content_type: String,
 }
-
-impl TmpFile {
-    fn save(&self) {
-
-    }
-}
