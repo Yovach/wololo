@@ -2,3 +2,5 @@
 dist/
 
 server/target/
+
+tmp/
