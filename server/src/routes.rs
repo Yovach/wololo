@@ -22,9 +22,14 @@ pub async fn root() -> Html<&'static str> {
             <body>
                 <form action="/" method="post" enctype="multipart/form-data">
                     <select name="format">
-                        <option>avi</option>
+                        <option>webm</option>
+                        <option>wmv</option>
+                        <option>mkv</option>
                         <option>mp4</option>
                         <option>gif</option>
+                        <option>mp3</option>
+                        <option>ogg</option>
+                        <option>wav</option>
                     </select>
 
                     <input type="file" name="file" />
