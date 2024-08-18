@@ -118,21 +118,25 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
         return "i was not able to write file".into_response();
     }
 
-    let mut output_path = file_path.to_string();
-    output_path.push_str(".output");
+    let output_path = file_path.to_string() + ".output." + output_format.to_str();
 
-    let output_path = file_data.path.to_string() + ".output." + output_format.to_str();
-    println!("input: {:?}, output: {:?}", file_data.path, &output_path);
-
-    let output = Command::new("ffmpeg")
+    if let Err(err) = Command::new("ffmpeg")
+        .arg("-loglevel")
+        .arg("quiet")
         .arg("-i")
-        .arg(file_data.path)
+        .arg(file_path)
         .arg(&output_path)
         .spawn()
         .expect("I expected a result here")
-        .wait_with_output();
+        .wait_with_output()
+    {
+        tracing::error!("an error occured while converting file (err: {})", err);
+        return "i was not able to convert your file".into_response();
+    }
 
-    let converted_file = fs::read(output_path).await.expect("can't read output file");
+    let converted_file = fs::read(&output_path)
+        .await
+        .expect("can't read output file");
 
     let file_name = file_data.name + "." + output_format.to_str();
     let content_disposition = &format!("attachement; filename=\"{}\"", file_name);
@@ -141,6 +145,14 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
         (header::CONTENT_TYPE, "application/octet-stream"),
         (header::CONTENT_DISPOSITION, content_disposition.as_str()),
     ]);
+
+    if let Err(err) = fs::remove_file(&file_path).await {
+        tracing::error!("an error occured while removing input file : {file_path} (err: {err})");
+    }
+
+    if let Err(err) = fs::remove_file(&output_path).await {
+        tracing::error!("an error occured while removing output file : {output_path} (err: {err})");
+    }
 
     return (headers, Bytes::from(converted_file)).into_response();
 }
