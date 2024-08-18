@@ -4,6 +4,7 @@ use axum::{
 use tracing::info;
 pub mod routes;
 pub mod tmp_file;
+pub mod formats;
 
 #[tokio::main]
 async fn main() {

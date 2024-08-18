@@ -4,7 +4,7 @@ use axum::{extract::Multipart, response::Html};
 use nanoid::nanoid;
 use serde::Deserialize;
 
-use crate::tmp_file::TmpFile;
+use crate::{formats::SupportedFormat, tmp_file::TmpFile};
 
 pub async fn root() -> Html<&'static str> {
     Html(
@@ -43,7 +43,7 @@ pub struct Input {
 
 pub async fn accept_form(mut multipart: Multipart) -> &'static str {
     let mut tmp_file: Option<TmpFile> = None;
-    let mut format: Option<String> = None;
+    let mut format: Option<SupportedFormat> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
         let field_name = field.name().unwrap();
         match field_name {
@@ -73,8 +73,11 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
             "format" => {
                 let text = field.text().await;
                 if let Ok(value) = text {
-                    format = Some(value);
-
+                    if let Ok(supported_format) = SupportedFormat::from_value(value) {
+                        format = Some(supported_format)
+                    } else {
+                        return "invalid format";
+                    }
                 }
             }
             _ => {
@@ -104,7 +107,7 @@ pub async fn accept_form(mut multipart: Multipart) -> &'static str {
     let mut output_path = file_path.to_string();
     output_path.push_str(".output");
 
-    let output_path = file_data.path.to_string() + ".output." + &format.unwrap();
+    let output_path = file_data.path.to_string() + ".output." + &format.unwrap().to_str();
     println!("input: {:?}, output: {:?}", file_data.path, output_path);
 
     let output = Command::new("ffmpeg")
