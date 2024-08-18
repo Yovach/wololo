@@ -5,6 +5,7 @@ use tracing::info;
 pub mod routes;
 pub mod tmp_file;
 pub mod formats;
+pub mod errors;
 
 #[tokio::main]
 async fn main() {

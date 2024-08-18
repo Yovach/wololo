@@ -13,8 +13,7 @@ use serde::Serialize;
 use tokio::fs;
 
 use crate::{
-    formats::{self, SUPPORTED_FORMATS},
-    tmp_file::TmpFile,
+    errors::ConvertError, formats::{self, SUPPORTED_FORMATS}, tmp_file::TmpFile
 };
 
 pub async fn root() -> Html<&'static str> {
@@ -56,7 +55,7 @@ pub async fn available_formats() -> Json<AvailableFormatsResp> {
     });
 }
 
-pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
+pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, ConvertError> {
     let mut tmp_file: Option<TmpFile> = None;
     let mut output_format: Option<String> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
@@ -69,7 +68,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
                 let bytes = field.bytes().await;
                 if let Err(err) = bytes {
                     println!("{:?}", err);
-                    return "error!".into_response();
+                    return Err(ConvertError::Parsing)
                 }
 
                 let file_id = nanoid!();
@@ -89,24 +88,24 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
                 let text = field.text().await;
                 if let Ok(value) = text {
                     if !formats::SUPPORTED_FORMATS.contains(&value.as_str()) {
-                        return "invalid format".into_response();
+                        return Err(ConvertError::UnsupportedFormat);
                     }
 
                     output_format = Some(value);
                 }
             }
             _ => {
-                println!("{:?} is not covered!", field_name);
+                // ignore the field if not handled
             }
         }
     }
 
     if tmp_file.is_none() {
-        return "invalid file".into_response();
+        return Err(ConvertError::MissingFile)
     }
 
     if output_format.is_none() {
-        return "invalid format".into_response();
+        return Err(ConvertError::MissingFormat)
     }
 
     let output_format = &output_format.unwrap();
@@ -118,7 +117,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
     let mut file = File::create_new(file_path).expect("i can't create file");
     let file_content = file_data.data.to_vec();
     if let Err(_) = file.write_all(&file_content) {
-        return "i was not able to write file".into_response();
+        return Err(ConvertError::FileCreation)
     }
 
     let output_path = file_path.to_string() + ".output." + &output_format;
@@ -134,7 +133,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
         .wait_with_output()
     {
         tracing::error!("an error occured while converting file (err: {})", err);
-        return "i was not able to convert your file".into_response();
+        return Err(ConvertError::DuringConversion)
     }
 
     let converted_file = fs::read(&output_path)
@@ -157,5 +156,5 @@ pub async fn accept_form(mut multipart: Multipart) -> Response<Body> {
         tracing::error!("an error occured while removing output file : {output_path} (err: {err})");
     }
 
-    return (headers, Bytes::from(converted_file)).into_response();
+    return Ok((headers, Bytes::from(converted_file)).into_response());
 }
