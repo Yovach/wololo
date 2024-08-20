@@ -1,1 +1,98 @@
 @import url("./reset-css.css");
+
+:root {
+    --bg-color: #f9fafb;
+    --text-color: #030712;
+
+    --title-color: #2563eb;
+
+    --btn-text-color: #1f2937;
+    --btn-bg-color: #d1d5db;
+    --btn-border-color: #e5e7eb;
+
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+}
+
+@supports (font-variation-settings: normal) {
+    :root {
+        font-family: InterVariable, sans-serif;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #030712;
+        --text-color: #f9fafb;
+
+        --title-color: #60a5fa;
+
+        --btn-text-color: #e5e7eb;
+        --btn-bg-color: #111827;
+        --btn-border-color: #1f2937;
+
+        --form-border-color: #404040;
+    }
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+h1 span {
+    font-weight: bolder;
+    color: var(--title-color);
+}
+
+fieldset {
+    border-style: none;
+}
+
+button {
+    padding: 0.25rem 1rem;
+    background-color: var(--btn-bg-color);
+    border-style: none;
+    color: var(--btn-text-color);
+    border-radius: 0.5rem;
+    width: fit-content;
+
+    font-weight: 500;
+
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+form#form {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5rem;
+    padding: 1rem;
+
+    border: 1px solid var(--btn-border-color);
+
+    border-radius: 0.5rem;
+    margin-top: 2rem;
+}
+
+.field--format {
+    display: flex;
+    align-items: center;
+    column-gap: 0.5rem;
+}
+
+div#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+button[type=submit] {
+    align-self: flex-end;
+}
+
+.error-container {
+    margin-top: 2rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
