@@ -1,5 +1,6 @@
-use axum::response::{IntoResponse, Response};
+use axum::{response::{IntoResponse, Response}, Json};
 use http::StatusCode;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -23,11 +24,18 @@ pub enum ConvertError {
     DuringConversion,
 }
 
+#[derive(Serialize)]
+struct ErrorResponse {
+    error: String,
+}
+
 impl IntoResponse for ConvertError {
     fn into_response(self) -> Response {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self),
+            Json(ErrorResponse {
+                error: format!("Something went wrong: {}", self),
+            }),
         )
             .into_response()
     }

@@ -165,7 +165,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
     let headers = response::AppendHeaders([
         (header::CONTENT_TYPE, "application/octet-stream"),
         (header::CONTENT_DISPOSITION, content_disposition.as_str()),
-        (HeaderName::from_static("x-file-name"), file_name.as_str())
+        (HeaderName::from_static("x-file-name"), file_name.as_str()),
     ]);
 
     file_data.delete();
