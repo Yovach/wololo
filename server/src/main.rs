@@ -3,7 +3,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use http::{HeaderValue, Method};
+use http::{HeaderName, HeaderValue, Method};
 use tower_http::cors::CorsLayer;
 use tracing::info;
 pub mod errors;
@@ -23,7 +23,8 @@ async fn main() {
         .layer(
             CorsLayer::new()
                 .allow_origin("http://localhost:5173".parse::<HeaderValue>().unwrap())
-                .allow_methods([Method::GET]),
+                .allow_methods([Method::GET])
+                .expose_headers([HeaderName::from_static("x-file-name")]),
         );
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
