@@ -16,8 +16,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let app = Router::new()
-        .route("/", get(routes::root))
-        .route("/", post(routes::accept_form))
+        .route("/convert-file", post(routes::accept_form))
         .route("/available-formats", get(routes::available_formats))
         .layer(DefaultBodyLimit::max(1024 * 1024 * 1024)) // 1 GB
         .layer(

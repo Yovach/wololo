@@ -4,7 +4,7 @@ use axum::{
     body::{Body, Bytes},
     extract::Multipart,
     http::header,
-    response::{self, Html, IntoResponse},
+    response::{self, IntoResponse},
     Json,
 };
 use http::{HeaderName, Response};
@@ -17,34 +17,6 @@ use crate::{
     formats::{self, SUPPORTED_FORMATS},
     tmp_file::TmpFile,
 };
-
-pub async fn root() -> Html<&'static str> {
-    Html(
-        r#"
-        <!doctype html>
-        <html>
-            <head></head>
-            <body>
-                <form action="/" method="post" enctype="multipart/form-data">
-                    <select name="format">
-                        <option>webm</option>
-                        <option>wmv</option>
-                        <option>mkv</option>
-                        <option>mp4</option>
-                        <option>gif</option>
-                        <option>mp3</option>
-                        <option>ogg</option>
-                        <option>wav</option>
-                    </select>
-
-                    <input type="file" name="file" />
-                    <input type="submit" value="Send">
-                </form>
-            </body>
-        </html>
-        "#,
-    )
-}
 
 #[derive(Serialize)]
 pub struct AvailableFormatsResp {
