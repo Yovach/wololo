@@ -10,6 +10,8 @@
     --btn-bg-color: #d1d5db;
     --btn-border-color: #e5e7eb;
 
+    --select-bg-color: #e5e7eb;
+
     font-family: Inter, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1;
 }
@@ -32,12 +34,21 @@
         --btn-border-color: #1f2937;
 
         --form-border-color: #404040;
+
+        --select-bg-color: #1f2937;
     }
 }
 
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
+
+    height: 100vh;
+}
+
+h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
 }
 
 h1 span {
@@ -91,8 +102,31 @@ button[type=submit] {
     align-self: flex-end;
 }
 
+input[type=file] {
+    max-width: 260px;
+}
+
 .error-container {
     margin-top: 2rem;
     font-size: 0.875rem;
     line-height: 1.25rem;
+}
+
+
+select#select-formats {
+    border: none;
+    padding: 0.25rem 0.5rem;
+    background: var(--select-bg-color);
+    color: var(--text-color);
+}
+
+@media screen and (max-width: 640px) {
+    h1 {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+
+    form#form {
+        padding: 0.75rem;
+    }
 }
