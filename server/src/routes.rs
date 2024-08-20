@@ -4,10 +4,10 @@ use axum::{
     body::{Body, Bytes},
     extract::Multipart,
     http::header,
-    response::{self, Html, IntoResponse},
+    response::{self, IntoResponse},
     Json,
 };
-use http::Response;
+use http::{HeaderName, Response};
 use nanoid::nanoid;
 use serde::Serialize;
 use tokio::fs;
@@ -17,34 +17,6 @@ use crate::{
     formats::{self, SUPPORTED_FORMATS},
     tmp_file::TmpFile,
 };
-
-pub async fn root() -> Html<&'static str> {
-    Html(
-        r#"
-        <!doctype html>
-        <html>
-            <head></head>
-            <body>
-                <form action="/" method="post" enctype="multipart/form-data">
-                    <select name="format">
-                        <option>webm</option>
-                        <option>wmv</option>
-                        <option>mkv</option>
-                        <option>mp4</option>
-                        <option>gif</option>
-                        <option>mp3</option>
-                        <option>ogg</option>
-                        <option>wav</option>
-                    </select>
-
-                    <input type="file" name="file" />
-                    <input type="submit" value="Send">
-                </form>
-            </body>
-        </html>
-        "#,
-    )
-}
 
 #[derive(Serialize)]
 pub struct AvailableFormatsResp {
@@ -165,6 +137,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
     let headers = response::AppendHeaders([
         (header::CONTENT_TYPE, "application/octet-stream"),
         (header::CONTENT_DISPOSITION, content_disposition.as_str()),
+        (HeaderName::from_static("x-file-name"), file_name.as_str()),
     ]);
 
     file_data.delete();

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + TS</title>
+</head>
+
+<body>
+  <div id="app">
+    <form id="form" action="/" method="post" enctype="multipart/form-data">
+      <div class="field">
+        <select id="select-formats" name="format"></select>
+        <input type="file" name="file" />
+      </div>
+      <input type="submit" value="Send">
+
+      <span id="error-message"></span>
+    </form>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
