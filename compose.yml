@@ -1,0 +1,5 @@
+services:
+  wololo-server:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
