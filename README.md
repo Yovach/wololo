@@ -42,6 +42,30 @@ To start the server, you'll also need to install
 [Rust](https://www.rust-lang.org/) and to start the client, please install
 [Node.js](https://nodejs.org/).
 
+### Build client
+
+Execute the command:
+
+```bash
+cd ./client/
+npm run build
+```
+
+### Start server
+
+Compile project with:
+
+```bash
+cd ./server/
+cargo build --release
+```
+
+Then, you can execute
+
+```bash
+./target/release/wololo-server
+```
+
 ## License
 
 See [LICENSE](./LICENSE.md)
