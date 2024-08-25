@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 axum = { version = "0.7.5", features = ["multipart", "json"] }
+dotenvy = "0.15.7"
 http = "1.1.0"
 nanoid = "0.4.0"
 serde = { version = "1.0.208", features = ["derive"] }
