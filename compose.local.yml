@@ -1,0 +1,11 @@
+services:
+  wololo-server:
+    ports:
+      - "8080:3000"
+
+  wololo-client:
+    ports:
+      - "8081:80"
+
+networks:
+  wololo: {}

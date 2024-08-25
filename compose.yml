@@ -8,7 +8,7 @@ services:
 
   wololo-client:
     build:
-      context: ./server/
+      context: ./client/
       dockerfile: Dockerfile
     networks:
       - wololo
