@@ -3,3 +3,15 @@ services:
     build:
       context: ./server/
       dockerfile: Dockerfile
+    networks:
+      - wololo
+
+  wololo-client:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+    networks:
+      - wololo
+
+networks:
+  wololo: {}
