@@ -1,0 +1,16 @@
+services:
+  wololo-server:
+    environment:
+      - FRONT_URL=http://localhost:8080
+    ports:
+      - "8081:3000"
+
+  wololo-client:
+    build:
+      args:
+        - VITE_BACK_URL=http://localhost:8081
+    ports:
+      - "8080:80"
+
+networks:
+  wololo: {}

@@ -1,0 +1,17 @@
+services:
+  wololo-server:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+    networks:
+      - wololo
+
+  wololo-client:
+    build:
+      context: ./client/
+      dockerfile: Dockerfile
+    networks:
+      - wololo
+
+networks:
+  wololo: {}
