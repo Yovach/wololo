@@ -8,7 +8,6 @@ use axum::{
 use dotenvy::dotenv;
 use http::{HeaderName, HeaderValue, Method};
 use tower_http::cors::CorsLayer;
-use tracing::info;
 pub mod errors;
 pub mod formats;
 pub mod routes;
@@ -18,10 +17,12 @@ pub mod tmp_file;
 async fn main() {
     tracing_subscriber::fmt::init();
 
+    // Check if `.env` file is present
     if let Ok(_) = dotenv() {
         tracing::info!("environment file found");
     }
 
+    // Check if FRONT_ENV is defined as environment variable
     let front_url = match env::var("FRONT_URL") {
         Ok(value) => value,
         Err(_) => {
@@ -42,7 +43,7 @@ async fn main() {
         );
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    info!("listening on {}", listener.local_addr().unwrap());
+    tracing::info!("listening on {}", listener.local_addr().unwrap());
 
     axum::serve(listener, app).await.unwrap();
 }

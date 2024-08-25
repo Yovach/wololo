@@ -35,7 +35,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
     while let Some(field) = multipart.next_field().await.unwrap() {
         match field.name().unwrap() {
             "file" => {
-                let file_name: String = field.file_name().expect("can't ").to_string();
+                let file_name: String = field.file_name().expect("expected a filename").to_string();
                 let content_type: String = field.content_type().unwrap().to_string();
 
                 let bytes = field.bytes().await;
@@ -48,7 +48,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
 
                 let data: Bytes = bytes.unwrap();
                 let folder: String = "../tmp/".to_string();
-                let file_path: &str = &(folder.clone() + file_id.as_str()).to_string();
+                let file_path: String = folder.clone() + file_id.as_str();
 
                 tmp_file = Some(TmpFile {
                     path: file_path.to_string(),
@@ -85,7 +85,6 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
         return Err(ConvertError::MissingFormat);
     }
 
-    let output_format: String = output_format.unwrap();
     let file_data: TmpFile = tmp_file.unwrap();
     let file_path: &String = &file_data.path;
 
@@ -103,8 +102,12 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
         return Err(ConvertError::FileCreation);
     }
 
+    let output_format: String = output_format.unwrap();
+    let file_name = &file_data.name;
+    let file_size: &usize = &file_data.data.len();
     let output_path: String = file_path.to_string() + ".output." + &output_format;
 
+    tracing::info!("start converting {} of {} bytes", file_name, file_size);
     if let Err(err) = Command::new("ffmpeg")
         .arg("-loglevel")
         .arg("quiet")
@@ -130,6 +133,8 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
             return Err(ConvertError::DuringConversion);
         }
     };
+
+    tracing::info!("finished to convert {} to {}", file_name, output_format);
 
     let file_name: String = file_data.to_owned().name + "." + &output_format;
     let content_disposition: String = format!("attachement; filename=\"{}\"", file_name);
