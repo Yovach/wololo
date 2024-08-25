@@ -3,7 +3,7 @@ interface AvailableFormatsResponse {
 }
 
 export async function getAvailableFormats(): Promise<Array<string>> {
-    const request = await fetch("http://localhost:3000/available-formats");
+    const request = await fetch(`${import.meta.env.VITE_BACK_URL}/available-formats`);
     if (!request.ok) {
         return [];
     }
