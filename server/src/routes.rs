@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write, process::Command};
+use std::{fs::File, io::Write};
 
 use axum::{
     body::{Body, Bytes},
@@ -15,7 +15,7 @@ use tokio::fs;
 use crate::{
     errors::ConvertError,
     formats::{self, SUPPORTED_VIDEO_FORMATS},
-    tmp_file::TmpFile,
+    tmp_file::TmpFile, utils::convert_file,
 };
 
 #[derive(Serialize)]
@@ -102,25 +102,21 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
         return Err(ConvertError::FileCreation);
     }
 
-    let output_format: String = output_format.unwrap();
+    let output_file_extension: String = output_format.unwrap();
     let file_name = &file_data.name;
     let file_size: &usize = &file_data.data.len();
-    let output_path: String = file_path.to_string() + ".output." + &output_format;
+    let output_path: String = file_path.to_string() + ".output." + &output_file_extension;
 
     tracing::info!("start converting {} of {} bytes", file_name, file_size);
-    if let Err(err) = Command::new("ffmpeg")
-        .arg("-loglevel")
-        .arg("quiet")
-        .arg("-i")
-        .arg(file_path)
-        .arg(&output_path)
-        .spawn()
-        .expect("I expected a result here")
-        .wait_with_output()
-    {
-        tracing::error!("an error occured while converting file (err: {})", err);
-        return Err(ConvertError::DuringConversion);
+
+    if let Err(err) = convert_file(file_path, &output_path) {
+        tracing::error!(
+            "an error occured while reading converted file (err: {})",
+            err
+        );
+        return Err(err);
     }
+
 
     let converted_file: Vec<u8> = match fs::read(&output_path).await {
         Ok(file) => file,
@@ -134,9 +130,9 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
         }
     };
 
-    tracing::info!("finished to convert {} to {}", file_name, output_format);
+    tracing::info!("finished to convert {} to {}", file_name, output_file_extension);
 
-    let file_name: String = file_data.to_owned().name + "." + &output_format;
+    let file_name: String = file_data.to_owned().name + "." + &output_file_extension;
     let content_disposition: String = format!("attachement; filename=\"{}\"", file_name);
 
     let headers = response::AppendHeaders([
