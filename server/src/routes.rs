@@ -14,7 +14,7 @@ use tokio::fs;
 
 use crate::{
     errors::ConvertError,
-    formats::{self, SUPPORTED_FORMATS},
+    formats::{self, SUPPORTED_VIDEO_FORMATS},
     tmp_file::TmpFile,
 };
 
@@ -25,7 +25,7 @@ pub struct AvailableFormatsResp {
 
 pub async fn available_formats() -> Json<AvailableFormatsResp> {
     return Json(AvailableFormatsResp {
-        formats: SUPPORTED_FORMATS,
+        formats: SUPPORTED_VIDEO_FORMATS,
     });
 }
 
@@ -60,7 +60,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
             "format" => {
                 output_format = match field.text().await {
                     Ok(value) => {
-                        if !formats::SUPPORTED_FORMATS.contains(&value.as_str()) {
+                        if !formats::SUPPORTED_VIDEO_FORMATS.contains(&value.as_str()) {
                             return Err(ConvertError::UnsupportedFormat);
                         }
 
