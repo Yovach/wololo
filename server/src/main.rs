@@ -12,6 +12,7 @@ pub mod errors;
 pub mod formats;
 pub mod routes;
 pub mod tmp_file;
+pub mod utils;
 
 #[tokio::main]
 async fn main() {
