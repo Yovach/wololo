@@ -1,0 +1,26 @@
+services:
+  wololo-server:
+    user: '${USER_ID}:${GROUP_ID}'
+    build:
+      context: ./server/
+      dockerfile: ./Dockerfile.dev
+    command: cargo run
+    ports:
+      - "8081:3000"
+
+  wololo-client:
+    depends_on:
+      - wololo-server
+
+    user: '${USER_ID}:${GROUP_ID}'
+    build:
+      context: ./client/
+      dockerfile: ./Dockerfile.dev
+    command: npm run dev -- --host
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client/:/app/
+
+networks:
+  wololo: {}
