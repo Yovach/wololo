@@ -7,9 +7,9 @@ WORKDIR /app
 COPY ./ /app
 RUN cargo build --release --locked
 
-FROM jrottenberg/ffmpeg:7.0-alpine
+FROM alpine:3.20
 RUN apk update
-RUN apk add --no-cache libgcc
+RUN apk add --no-cache libgcc ffmpeg
 COPY --from=builder /app/target/release/wololo-server /usr/local/bin/wololo-server
 
 ENTRYPOINT ["/usr/local/bin/wololo-server"]
