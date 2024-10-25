@@ -3,10 +3,11 @@ services:
     user: '${USER_ID}:${GROUP_ID}'
     build:
       context: ./server/
-      dockerfile: ./Dockerfile.dev
-    command: cargo run
+      dockerfile: ./Dockerfile
+    environment:
+      - FRONT_URL=http://localhost:5173
     ports:
-      - "8081:3000"
+      - "3000:3000"
 
   wololo-client:
     depends_on:
