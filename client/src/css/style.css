@@ -86,7 +86,7 @@ form#form {
     margin-top: 2rem;
 }
 
-.field--format {
+.field-format {
     display: flex;
     align-items: center;
     column-gap: 0.5rem;
