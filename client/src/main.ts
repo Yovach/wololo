@@ -13,12 +13,35 @@ if (!isSelectElement(selectEl)) {
   throw new Error("Missing or invalid format selector");
 }
 
-getAvailableFormats().then((availableFormats) => {
-  for (const format of availableFormats) {
+function createOptGroupFromFormats(label: string, formats: Array<string>): HTMLOptGroupElement {
+  const optGroupEl = document.createElement("optgroup");
+  optGroupEl.label = label;
+  for (const format of formats) {
     const option = document.createElement("option");
     option.textContent = format;
-    selectEl.appendChild(option);
+    optGroupEl.appendChild(option);
   }
+  return optGroupEl;
+}
+
+getAvailableFormats().then((availableFormats) => {
+  const optGroupVideoEl = createOptGroupFromFormats(
+    "Video",
+    availableFormats.formats.video
+  )
+  selectEl.appendChild(optGroupVideoEl)
+
+  const optGroupImageEl = createOptGroupFromFormats(
+    "Image",
+    availableFormats.formats.image
+  )
+  selectEl.appendChild(optGroupImageEl)
+
+  const optGroupAudioEl = createOptGroupFromFormats(
+    "Audio",
+    availableFormats.formats.audio
+  )
+  selectEl.appendChild(optGroupAudioEl)
 });
 
 formEl.addEventListener("submit", (evt: SubmitEvent) => {

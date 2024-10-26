@@ -1,17 +1,36 @@
-interface AvailableFormatsResponse {
-    formats: Array<string>;
+import { string, object, array } from "zod"
+
+interface AvailableFormatsByMedia {
+    video: Array<string>;
+    image: Array<string>;
+    audio: Array<string>;
 }
 
-export async function getAvailableFormats(): Promise<Array<string>> {
+interface AvailableFormatsResponse {
+    formats: AvailableFormatsByMedia;
+}
+
+export async function getAvailableFormats(): Promise<AvailableFormatsResponse> {
     const request = await fetch(`${import.meta.env.VITE_BACK_URL}/available-formats`);
     if (!request.ok) {
-        return [];
+        return {
+            formats: {
+                image: [],
+                video: [],
+                audio: [],
+            }
+        };
     }
 
-    const result: AvailableFormatsResponse = await request.json();
-    if (!("formats" in result)) {
-        throw new Error("Invalid response data!")
-    }
+    const result = await request.json();
 
-    return result.formats;
+    const responseSchema = object({
+        formats: object({
+            image: array(string()),
+            video: array(string()),
+            audio: array(string()),
+        })
+    });
+
+    return responseSchema.parse(result);
 }

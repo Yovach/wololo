@@ -9,7 +9,7 @@ RUN cargo build --release --locked
 
 FROM alpine:3.20
 RUN apk update
-RUN apk add --no-cache libgcc ffmpeg
+RUN apk add --no-cache libgcc ffmpeg vips-tools
 COPY --from=builder /app/target/release/wololo-server /usr/local/bin/wololo-server
 
 ENTRYPOINT ["/usr/local/bin/wololo-server"]
