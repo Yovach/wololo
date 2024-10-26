@@ -5,7 +5,7 @@ dc := USER_ID=$(user) GROUP_ID=$(group) docker compose -p wololo-dev
 
 .PHONY: dev
 dev:
-	$(dc) --file ./compose.dev.yml up
+	$(dc) --file ./compose.dev.yml up --build
 
 .PHONY: down
 down:
