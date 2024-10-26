@@ -40,15 +40,17 @@ pub fn convert_file(
     if let Ok(output_format) = detect_file_type(output_path) {
         match output_format {
             OutputFormat::IMAGE => {
-                let mut command: Command = Command::new("vips");
-                command.arg(format!("{output_file_extension}save"));
-                command.arg(file_path);
-                command.arg(output_path);
-                let result = command
+                if let Err(err) = Command::new("vips")
+                    .arg(format!("{output_file_extension}save"))
+                    .arg(file_path)
+                    .arg(output_path)
                     .spawn()
                     .expect("I expected a result here")
-                    .wait_with_output();
-                println!("{:?}", result);
+                    .wait_with_output()
+                {
+                    tracing::error!("an error occured while converting file (err: {})", err);
+                    return Err(ConvertError::DuringConversion);
+                }
             }
             OutputFormat::VIDEO | OutputFormat::AUDIO => {
                 if let Err(err) = Command::new("ffmpeg")
