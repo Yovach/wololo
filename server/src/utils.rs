@@ -2,7 +2,9 @@ use std::process::Command;
 
 use crate::{
     errors::ConvertError,
-    formats::{OutputFormat, SUPPORTED_IMAGE_FORMATS, SUPPORTED_VIDEO_FORMATS},
+    formats::{
+        OutputFormat, SUPPORTED_AUDIO_FORMATS, SUPPORTED_IMAGE_FORMATS, SUPPORTED_VIDEO_FORMATS,
+    },
 };
 
 fn detect_file_type(file_path: &str) -> Result<OutputFormat, ()> {
@@ -20,14 +22,35 @@ fn detect_file_type(file_path: &str) -> Result<OutputFormat, ()> {
         return Ok(OutputFormat::VIDEO);
     }
 
+    let is_audio = SUPPORTED_AUDIO_FORMATS
+        .iter()
+        .any(|ext| file_path.ends_with(ext.to_owned()));
+    if is_audio {
+        return Ok(OutputFormat::AUDIO);
+    }
+
     return Err(());
 }
 
-pub fn convert_file(file_path: &str, output_path: &str) -> Result<(), ConvertError> {
+pub fn convert_file(
+    file_path: &str,
+    output_path: &str,
+    output_file_extension: &str,
+) -> Result<(), ConvertError> {
     if let Ok(output_format) = detect_file_type(output_path) {
         match output_format {
-            OutputFormat::IMAGE => {}
-            OutputFormat::VIDEO => {
+            OutputFormat::IMAGE => {
+                let mut command: Command = Command::new("vips");
+                command.arg(format!("{output_file_extension}save"));
+                command.arg(file_path);
+                command.arg(output_path);
+                let result = command
+                    .spawn()
+                    .expect("I expected a result here")
+                    .wait_with_output();
+                println!("{:?}", result);
+            }
+            OutputFormat::VIDEO | OutputFormat::AUDIO => {
                 if let Err(err) = Command::new("ffmpeg")
                     .arg("-loglevel")
                     .arg("quiet")
