@@ -60,7 +60,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
             "format" => {
                 output_format = match field.text().await {
                     Ok(value) => {
-                        if !formats::SUPPORTED_VIDEO_FORMATS.contains(&value.as_str()) {
+                        if !formats::is_output_format_supported(&value.as_str()) {
                             return Err(ConvertError::UnsupportedFormat);
                         }
 

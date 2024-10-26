@@ -10,3 +10,8 @@ pub enum OutputFormat {
     VIDEO,
     IMAGE,
 }
+
+pub fn is_output_format_supported(output: &str) -> bool {
+    return self::SUPPORTED_VIDEO_FORMATS.contains(&output)
+        || self::SUPPORTED_IMAGE_FORMATS.contains(&output);
+}
