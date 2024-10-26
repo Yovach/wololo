@@ -14,18 +14,30 @@ use tokio::fs;
 
 use crate::{
     errors::ConvertError,
-    formats::{self, SUPPORTED_VIDEO_FORMATS},
-    tmp_file::TmpFile, utils::convert_file,
+    formats::{self, SUPPORTED_AUDIO_FORMATS, SUPPORTED_IMAGE_FORMATS, SUPPORTED_VIDEO_FORMATS},
+    tmp_file::TmpFile,
+    utils::convert_file,
 };
 
 #[derive(Serialize)]
+pub struct AvailableFormatsByMedia {
+    video: &'static [&'static str],
+    image: &'static [&'static str],
+    audio: &'static [&'static str],
+}
+
+#[derive(Serialize)]
 pub struct AvailableFormatsResp {
-    formats: &'static [&'static str],
+    formats: AvailableFormatsByMedia,
 }
 
 pub async fn available_formats() -> Json<AvailableFormatsResp> {
     return Json(AvailableFormatsResp {
-        formats: SUPPORTED_VIDEO_FORMATS,
+        formats: AvailableFormatsByMedia {
+            image: SUPPORTED_IMAGE_FORMATS,
+            video: SUPPORTED_VIDEO_FORMATS,
+            audio: SUPPORTED_AUDIO_FORMATS,
+        },
     });
 }
 
@@ -109,14 +121,13 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
 
     tracing::info!("start converting {} of {} bytes", file_name, file_size);
 
-    if let Err(err) = convert_file(file_path, &output_path) {
+    if let Err(err) = convert_file(file_path, &output_path, &output_file_extension) {
         tracing::error!(
             "an error occured while reading converted file (err: {})",
             err
         );
         return Err(err);
     }
-
 
     let converted_file: Vec<u8> = match fs::read(&output_path).await {
         Ok(file) => file,
@@ -130,7 +141,11 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
         }
     };
 
-    tracing::info!("finished to convert {} to {}", file_name, output_file_extension);
+    tracing::info!(
+        "finished to convert {} to {}",
+        file_name,
+        output_file_extension
+    );
 
     let file_name: String = file_data.to_owned().name + "." + &output_file_extension;
     let content_disposition: String = format!("attachement; filename=\"{}\"", file_name);
