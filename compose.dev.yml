@@ -22,11 +22,11 @@ services:
       dockerfile: ./Dockerfile.dev
     develop:
       watch:
-        - path: ./client/src
-          action: sync
-          target: ./app/src
         - path: ./client/package-lock.json
           action: rebuild
+        - path: ./client
+          action: sync
+          target: ./app
     command: npm run dev -- --host
     ports:
       - "5173:5173"
