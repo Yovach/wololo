@@ -1,7 +1,4 @@
-user := $(shell id -u)
-group := $(shell id -g)
-
-dc := USER_ID=$(user) GROUP_ID=$(group) docker compose -p wololo-dev
+dc := docker compose -p wololo-dev
 
 .PHONY: install
 install:
