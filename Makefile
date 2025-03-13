@@ -9,7 +9,7 @@ install:
 
 .PHONY: dev
 dev:
-	$(dc) --file ./compose.dev.yml up --build
+	$(dc) --file ./compose.dev.yml up --watch
 
 .PHONY: down
 down:
