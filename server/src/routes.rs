@@ -72,6 +72,11 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
                 let file_id: String = nanoid!();
 
                 let data: Bytes = bytes.unwrap();
+                if data.len() == 0 {
+                    tracing::error!("can't convert an empty file");
+                    return Err(ConvertError::MissingFile);
+                }
+
                 let folder: String = "../tmp/".to_string();
                 let file_path: String = folder.clone() + file_id.as_str();
 
