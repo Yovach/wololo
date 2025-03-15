@@ -5,7 +5,7 @@ RUN apk add --no-cache musl-dev
 
 WORKDIR /app
 
-COPY ./ /app
+COPY --chown=1000:1000 . /app
 RUN cargo build --release --locked
 
 FROM alpine:3.20
