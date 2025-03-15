@@ -1,9 +1,14 @@
 services:
   wololo-server:
-    user: '${USER_ID}:${GROUP_ID}'
     build:
       context: ./server/
       dockerfile: ./Dockerfile
+    develop:
+      watch:
+        - path: ./server
+          action: rebuild
+        - path: ./server
+          action: restart
     environment:
       - FRONT_URL=http://localhost:5173
     ports:
@@ -12,16 +17,19 @@ services:
   wololo-client:
     depends_on:
       - wololo-server
-
-    user: '${USER_ID}:${GROUP_ID}'
     build:
       context: ./client/
       dockerfile: ./Dockerfile.dev
+    develop:
+      watch:
+        - path: ./client/package-lock.json
+          action: rebuild
+        - path: ./client
+          action: sync
+          target: ./app
     command: npm run dev -- --host
     ports:
       - "5173:5173"
-    volumes:
-      - ./client/:/app/
 
 networks:
   wololo: {}

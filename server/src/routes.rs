@@ -31,6 +31,19 @@ pub struct AvailableFormatsResp {
     formats: AvailableFormatsByMedia,
 }
 
+#[derive(Serialize)]
+pub struct IndexResp {
+    message: &'static str,
+}
+
+pub async fn index() -> Json<IndexResp> {
+    static ALIVE_MESSAGE: &'static str = "ok";
+
+    return Json(IndexResp {
+        message: ALIVE_MESSAGE,
+    })
+}
+
 pub async fn available_formats() -> Json<AvailableFormatsResp> {
     return Json(AvailableFormatsResp {
         formats: AvailableFormatsByMedia {
