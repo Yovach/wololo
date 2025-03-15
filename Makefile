@@ -6,10 +6,10 @@ install:
 
 .PHONY: build
 build:
-	$(dc) --file ./compose.dev.yml build 
+	$(dc) --file ./compose.dev.yml build
 
-.PHONY: dev
-dev:
+.PHONY: up
+up:
 	$(dc) --file ./compose.dev.yml up --watch
 
 .PHONY: down
