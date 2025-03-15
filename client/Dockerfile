@@ -14,7 +14,6 @@ ENV VITE_BACK_URL=${VITE_BACK_URL}
 
 RUN npm run build
 
-
 FROM nginx:alpine
 
 ARG PORT=80
