@@ -1,7 +1,22 @@
-import { FormEvent, useCallback, useState } from "react";
-import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
+"use client";
 
-export function ConvertFileForm() {
+import { FormEvent, memo, use, useCallback, useMemo, useState } from "react";
+import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
+import { getAvailableFormats } from "../../helpers/api";
+
+type Props = {
+  availableFormatsPromise: ReturnType<typeof getAvailableFormats>;
+};
+
+const Translations = {
+  video: "Video",
+  audio: "Audio",
+  image: "Image",
+} as const;
+
+export const ConvertFileForm = memo(function ConvertFileForm({
+  availableFormatsPromise,
+}: Props) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = useCallback(async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -28,6 +43,12 @@ export function ConvertFileForm() {
     }
   }, []);
 
+  const formats = use(availableFormatsPromise).formats;
+  const groups = useMemo(
+    () => Object.keys(formats) as unknown as (keyof typeof formats)[],
+    [formats]
+  );
+
   return (
     <>
       <form
@@ -42,7 +63,20 @@ export function ConvertFileForm() {
             <label htmlFor="select-formats">
               Please select an output format
             </label>
-            <select id="select-formats" name="format"></select>
+            <select id="select-formats" name="format">
+              {groups.map((group) => (
+                <optgroup
+                  label={Translations[group]}
+                  key={`SelectFormat.${group}`}
+                >
+                  {formats[group].map((format) => (
+                    <option key={`SelectFormat.${group}.${format}`}>
+                      {format}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </fieldset>
 
           <fieldset>
@@ -60,4 +94,4 @@ export function ConvertFileForm() {
       )}
     </>
   );
-}
+});

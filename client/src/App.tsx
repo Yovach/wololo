@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { ConvertFileForm } from "./components/form/convert-file-form";
 import { Banner } from "./components/header/banner";
 import { Description } from "./components/header/description";
 import { Logo } from "./components/header/logo";
+import { getAvailableFormats } from "./helpers/api";
 
 function App() {
   return (
@@ -9,7 +11,9 @@ function App() {
       <Logo />
       <Banner />
       <Description />
-      <ConvertFileForm />
+      <Suspense fallback={<span>Loading..</span>}>
+        <ConvertFileForm availableFormatsPromise={getAvailableFormats()} />
+      </Suspense>
     </>
   );
 }
