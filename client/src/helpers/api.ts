@@ -1,14 +1,14 @@
-import { string, object, array } from "zod"
+import { z } from "zod"
 
-interface AvailableFormatsByMedia {
-    video: Array<string>;
-    image: Array<string>;
-    audio: Array<string>;
-}
+const responseSchema = z.object({
+    formats: z.object({
+        image: z.array(z.string()),
+        video: z.array(z.string()),
+        audio: z.array(z.string()),
+    })
+});
 
-interface AvailableFormatsResponse {
-    formats: AvailableFormatsByMedia;
-}
+type AvailableFormatsResponse = z.infer<typeof responseSchema>;
 
 export async function getAvailableFormats(): Promise<AvailableFormatsResponse> {
     const request = await fetch(`${import.meta.env.VITE_BACK_URL}/available-formats`);
@@ -23,14 +23,5 @@ export async function getAvailableFormats(): Promise<AvailableFormatsResponse> {
     }
 
     const result = await request.json();
-
-    const responseSchema = object({
-        formats: object({
-            image: array(string()),
-            video: array(string()),
-            audio: array(string()),
-        })
-    });
-
     return responseSchema.parse(result);
 }
