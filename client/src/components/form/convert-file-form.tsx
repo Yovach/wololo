@@ -80,7 +80,7 @@ export const ConvertFileForm = memo(function ConvertFileForm({
           </fieldset>
 
           <fieldset>
-            <input type="file" name="file" />
+            <input type="file" name="file" required />
           </fieldset>
         </div>
 
