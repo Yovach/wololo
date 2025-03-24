@@ -24,7 +24,7 @@ services:
           action: rebuild
         - path: ./client
           action: sync
-          target: ./app
+          target: /app
     command: npm run dev -- --host
     ports:
       - "5173:5173"
