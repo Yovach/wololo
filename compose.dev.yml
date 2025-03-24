@@ -7,8 +7,6 @@ services:
       watch:
         - path: ./server
           action: rebuild
-        - path: ./server
-          action: restart
     environment:
       - FRONT_URL=http://localhost:5173
     ports:
