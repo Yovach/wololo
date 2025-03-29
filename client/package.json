@@ -11,11 +11,17 @@
   "devDependencies": {
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.5.3",
-    "vite": "^6.2.2"
+    "vite": "^6.2.3"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/core-mt": "^0.12.9",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "jotai": "^2.12.2",
+    "mime": "^4.0.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.23.8"

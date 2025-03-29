@@ -7,8 +7,6 @@ services:
       watch:
         - path: ./server
           action: rebuild
-        - path: ./server
-          action: restart
     environment:
       - FRONT_URL=http://localhost:5173
     ports:
@@ -26,7 +24,7 @@ services:
           action: rebuild
         - path: ./client
           action: sync
-          target: ./app
+          target: /app
     command: npm run dev -- --host
     ports:
       - "5173:5173"
