@@ -1,132 +1,131 @@
-@import url("./reset-css.css");
-
 :root {
-    --bg-color: #f9fafb;
-    --text-color: #030712;
+  --bg-color: #f9fafb;
+  --text-color: #030712;
 
-    --title-color: #2563eb;
+  --title-color: #2563eb;
 
-    --btn-text-color: #1f2937;
-    --btn-bg-color: #d1d5db;
-    --btn-border-color: #e5e7eb;
+  --btn-text-color: #1f2937;
+  --btn-bg-color: #d1d5db;
+  --btn-border-color: #e5e7eb;
 
-    --select-bg-color: #e5e7eb;
+  --select-bg-color: #e5e7eb;
 
-    font-family: Inter, sans-serif;
-    font-feature-settings: 'liga' 1, 'calt' 1;
+  font-family: Inter, sans-serif;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
 }
 
 @supports (font-variation-settings: normal) {
-    :root {
-        font-family: InterVariable, sans-serif;
-    }
+  :root {
+    font-family: InterVariable, sans-serif;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #030712;
-        --text-color: #f9fafb;
+  :root {
+    --bg-color: #030712;
+    --text-color: #f9fafb;
 
-        --title-color: #60a5fa;
+    --title-color: #60a5fa;
 
-        --btn-text-color: #e5e7eb;
-        --btn-bg-color: #111827;
-        --btn-border-color: #1f2937;
+    --btn-text-color: #e5e7eb;
+    --btn-bg-color: #111827;
+    --btn-border-color: #1f2937;
 
-        --form-border-color: #404040;
+    --form-border-color: #404040;
 
-        --select-bg-color: #1f2937;
-    }
+    --select-bg-color: #1f2937;
+  }
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
 
-    height: 100vh;
+  height: 100vh;
 }
 
 h1 {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
 }
 
 h1 span {
-    font-weight: bolder;
-    color: var(--title-color);
+  font-weight: bolder;
+  color: var(--title-color);
 }
 
 fieldset {
-    border-style: none;
+  border-style: none;
 }
 
 button {
-    padding: 0.25rem 1rem;
-    background-color: var(--btn-bg-color);
-    border-style: none;
-    color: var(--btn-text-color);
-    border-radius: 0.5rem;
-    width: fit-content;
+  padding: 0.25rem 1rem;
+  background-color: var(--btn-bg-color);
+  border-style: none;
+  color: var(--btn-text-color);
+  border-radius: 0.5rem;
+  width: fit-content;
 
-    font-weight: 500;
+  font-weight: 500;
 
-    font-size: 1rem;
-    line-height: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 form#form {
-    display: flex;
-    flex-direction: column;
-    row-gap: 0.5rem;
-    padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+  padding: 1rem;
 
-    border: 1px solid var(--btn-border-color);
+  border: 1px solid var(--btn-border-color);
 
-    border-radius: 0.5rem;
-    margin-top: 2rem;
+  border-radius: 0.5rem;
+  margin-top: 2rem;
 }
 
 .field-format {
-    display: flex;
-    align-items: center;
-    column-gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  column-gap: 0.5rem;
 }
 
 div#app {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-button[type=submit] {
-    align-self: flex-end;
+button[type="submit"] {
+  align-self: flex-end;
 }
 
-input[type=file] {
-    max-width: 260px;
+input[type="file"] {
+  max-width: 260px;
 }
 
 .error-container {
-    margin-top: 2rem;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
-
 select#select-formats {
-    border: none;
-    padding: 0.25rem 0.5rem;
-    background: var(--select-bg-color);
-    color: var(--text-color);
+  border: none;
+  padding: 0.25rem 0.5rem;
+  background: var(--select-bg-color);
+  color: var(--text-color);
 }
 
 @media screen and (max-width: 640px) {
-    h1 {
-        font-size: 1.5rem;
-        line-height: 2rem;
-    }
+  h1 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
 
-    form#form {
-        padding: 0.75rem;
-    }
+  form#form {
+    padding: 0.75rem;
+  }
 }

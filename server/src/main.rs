@@ -19,7 +19,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // Check if `.env` file is present
-    if let Ok(_) = dotenv() {
+    if dotenv().is_ok() {
         tracing::info!("environment file found");
     }
 

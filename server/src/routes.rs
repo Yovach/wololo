@@ -37,21 +37,21 @@ pub struct IndexResp {
 }
 
 pub async fn index() -> Json<IndexResp> {
-    static ALIVE_MESSAGE: &'static str = "ok";
+    static ALIVE_MESSAGE: &str = "ok";
 
-    return Json(IndexResp {
+   Json(IndexResp {
         message: ALIVE_MESSAGE,
     })
 }
 
 pub async fn available_formats() -> Json<AvailableFormatsResp> {
-    return Json(AvailableFormatsResp {
+    Json(AvailableFormatsResp {
         formats: AvailableFormatsByMedia {
             image: SUPPORTED_IMAGE_FORMATS,
             video: SUPPORTED_VIDEO_FORMATS,
             audio: SUPPORTED_AUDIO_FORMATS,
         },
-    });
+    })
 }
 
 pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, ConvertError> {
@@ -72,7 +72,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
                 let file_id: String = nanoid!();
 
                 let data: Bytes = bytes.unwrap();
-                if data.len() == 0 {
+                if data.is_empty() {
                     tracing::error!("can't convert an empty file");
                     return Err(ConvertError::MissingFile);
                 }
@@ -90,7 +90,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
             "format" => {
                 output_format = match field.text().await {
                     Ok(value) => {
-                        if !formats::is_output_format_supported(&value.as_str()) {
+                        if !formats::is_output_format_supported(value.as_str()) {
                             return Err(ConvertError::UnsupportedFormat);
                         }
 
@@ -118,7 +118,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
     let file_data: TmpFile = tmp_file.unwrap();
     let file_path: &String = &file_data.path;
 
-    let mut file: File = match File::create_new(&file_path) {
+    let mut file: File = match File::create_new(file_path) {
         Ok(file) => file,
         Err(err) => {
             tracing::error!("an error occured while creating file (err: {})", err);
@@ -127,7 +127,7 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
     };
 
     let file_content: Vec<u8> = file_data.data.to_vec();
-    if let Err(_) = file.write_all(&file_content) {
+    if file.write_all(&file_content).is_err() {
         file_data.delete();
         return Err(ConvertError::FileCreation);
     }
@@ -180,5 +180,5 @@ pub async fn accept_form(mut multipart: Multipart) -> Result<Response<Body>, Con
         tracing::error!("an error occured while removing output file : {output_path} (err: {err})");
     }
 
-    return Ok((headers, Bytes::from(converted_file)).into_response());
+    Ok((headers, Bytes::from(converted_file)).into_response())
 }

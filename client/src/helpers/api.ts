@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { SUPPORTED_AUDIO_FORMATS, SUPPORTED_IMAGE_FORMATS, SUPPORTED_VIDEO_FORMATS } from "./supported-formats";
+import {
+  SUPPORTED_AUDIO_FORMATS,
+  SUPPORTED_IMAGE_FORMATS,
+  SUPPORTED_VIDEO_FORMATS,
+} from "./supported-formats";
 
 const responseSchema = z.object({
   formats: z.object({
@@ -14,7 +18,7 @@ type AvailableFormatsResponse = z.infer<typeof responseSchema>;
 export async function getAvailableFormats(): Promise<AvailableFormatsResponse> {
   try {
     const request = await fetch(
-      `${import.meta.env.VITE_BACK_URL}/available-formats`
+      `${import.meta.env.VITE_BACK_URL}/available-formats`,
     );
 
     if (request.ok) {
