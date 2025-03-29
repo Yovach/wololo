@@ -4,6 +4,7 @@ import { FormEvent, memo, use, useCallback, useMemo, useState } from "react";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 import { getAvailableFormats } from "../../helpers/api";
 import { useFFmpeg } from "../../hooks/use-ffmpeg";
+import mime from "mime/lite";
 
 type Props = {
   availableFormatsPromise: ReturnType<typeof getAvailableFormats>;
@@ -33,28 +34,30 @@ export const ConvertFileForm = memo(function ConvertFileForm({
         if (isReady) {
           const file = formData.get("file");
           if (file instanceof File) {
+            // Ensure format is string
+            const format = formData.get("format");
+            if (typeof format !== "string") {
+              throw new Error("Invalid format");
+            }
+
+            // Get mimeType from selected format and check if it's valid
+            const mimeType = mime.getType(format);
+            if (typeof mimeType !== "string") {
+              throw new Error("Invalid format");
+            }
+
             const fileBytes = await file.arrayBuffer();
             const fileContent = new Uint8Array(fileBytes);
             await ffmpeg.writeFile(file.name, fileContent);
 
-            fileName = "output.mp4";
+            fileName = `output.${format}`;
 
             await ffmpeg.exec(["-i", file.name, fileName]);
 
             const data = await ffmpeg.readFile(fileName);
+            blob = new Blob([data], { type: mimeType });
 
-            blob = new Blob([data], { type: "video/mp4" });
-
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-
-            link.click();
-
-            URL.revokeObjectURL(link.href);
-            link.remove();
-
-            ffmpeg.deleteFile("output.mp4");
+            ffmpeg.deleteFile(fileName);
           }
         } else {
           const response = await sendConvertFileRequest(formData);
@@ -67,11 +70,11 @@ export const ConvertFileForm = memo(function ConvertFileForm({
           }
         }
       } catch (e) {
-          console.error(e);
+        console.error(e);
         setErrorMessage("An error occured");
       }
 
-      if (blob && fileName) {
+      if (blob !== null && fileName !== null) {
         const tmpUrl = URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = tmpUrl;
