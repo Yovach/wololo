@@ -83,13 +83,13 @@ export const ConvertFileForm = memo(function ConvertFileForm({
         URL.revokeObjectURL(tmpUrl);
       }
     },
-    [isReady, ffmpeg]
+    [isReady, ffmpeg],
   );
 
   const formats = use(availableFormatsPromise).formats;
   const groups = useMemo(
     () => Object.keys(formats) as unknown as (keyof typeof formats)[],
-    [formats]
+    [formats],
   );
 
   return (

@@ -9,9 +9,7 @@ export const DownloadFFmpegButton = memo(function DownloadFFmpegButton() {
   }
 
   if (isLoading) {
-    return (
-      <span>Downloading..</span>
-    );
+    return <span>Downloading..</span>;
   }
 
   return (

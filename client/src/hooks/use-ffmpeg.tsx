@@ -54,7 +54,7 @@ export function useFFmpeg(): HookResult {
 
     setIsReady(true);
     setIsLoading(false);
-  }, [ffmpeg]);
+  }, [ffmpeg, setIsLoading, setIsReady]);
 
   useEffect(() => {
     const value = localStorage.getItem(shouldAutomaticallyDownload);
