@@ -28,7 +28,6 @@
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/core-mt": "^0.12.9",
     "@ffmpeg/ffmpeg": "^0.12.15",
-    "@ffmpeg/util": "^0.12.2",
     "jotai": "^2.12.2",
     "mime": "^4.0.6",
     "react": "^19.0.0",
