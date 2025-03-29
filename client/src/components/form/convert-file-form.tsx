@@ -18,7 +18,7 @@ const Translations = {
 export const ConvertFileForm = memo(function ConvertFileForm({
   availableFormatsPromise,
 }: Props) {
-  const { ffmpeg, isLoaded } = useFFmpeg();
+  const { ffmpeg, isReady } = useFFmpeg();
   const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = useCallback(
     async (evt: FormEvent<HTMLFormElement>) => {
@@ -30,7 +30,7 @@ export const ConvertFileForm = memo(function ConvertFileForm({
       let fileName: string | null = null;
 
       try {
-        if (isLoaded) {
+        if (isReady) {
           const file = formData.get("file");
           if (file instanceof File) {
             const fileBytes = await file.arrayBuffer();
@@ -67,6 +67,7 @@ export const ConvertFileForm = memo(function ConvertFileForm({
           }
         }
       } catch (e) {
+          console.error(e);
         setErrorMessage("An error occured");
       }
 
@@ -79,7 +80,7 @@ export const ConvertFileForm = memo(function ConvertFileForm({
         URL.revokeObjectURL(tmpUrl);
       }
     },
-    [isLoaded, ffmpeg]
+    [isReady, ffmpeg]
   );
 
   const formats = use(availableFormatsPromise).formats;
