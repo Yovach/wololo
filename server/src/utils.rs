@@ -29,7 +29,7 @@ fn detect_file_type(file_path: &str) -> Result<OutputFormat, ()> {
         return Ok(OutputFormat::AUDIO);
     }
 
-    return Err(());
+    Err(())
 }
 
 pub fn convert_file(
@@ -70,5 +70,5 @@ pub fn convert_file(
         }
     }
 
-    return Ok(());
+    Ok(())
 }
