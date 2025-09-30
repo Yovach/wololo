@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, memo, use, useCallback, useMemo, useState } from "react";
+import { FormEvent, memo, useCallback, useMemo, useState } from "preact/compat";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 import { getAvailableFormats } from "../../helpers/api";
 import { useFFmpeg } from "../../hooks/use-ffmpeg";
@@ -86,7 +86,8 @@ export const ConvertFileForm = memo(function ConvertFileForm({
     [isReady, ffmpeg],
   );
 
-  const formats = use(availableFormatsPromise).formats;
+  // const formats = use(availableFormatsPromise).formats;
+  const formats = useMemo(() => [], []);
   const groups = useMemo(
     () => Object.keys(formats) as unknown as (keyof typeof formats)[],
     [formats],

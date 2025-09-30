@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo } from "preact/compat";
 import { useFFmpeg } from "../../hooks/use-ffmpeg";
 
 export const DownloadFFmpegButton = memo(function DownloadFFmpegButton() {

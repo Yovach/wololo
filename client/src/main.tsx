@@ -1,11 +1,12 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { StrictMode } from "preact/compat";
+import { render } from "preact";
 import App from "./App.tsx";
 import "modern-normalize/modern-normalize.css";
 import "./css/style.css";
 
-createRoot(document.getElementById("app")!).render(
+render(
   <StrictMode>
     <App />
   </StrictMode>,
+  document.getElementById("app")!,
 );

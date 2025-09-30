@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense } from "preact/compat";
 import { ConvertFileForm } from "./components/form/convert-file-form";
 import { Banner } from "./components/header/banner";
 import { Description } from "./components/header/description";
