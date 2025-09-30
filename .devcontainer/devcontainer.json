@@ -2,9 +2,7 @@
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
 		"ghcr.io/devcontainers/features/rust:1": {
-			"version": "latest",
-			"profile": "minimal",
-			"targets": "aarch64-unknown-linux-gnu"
+			"profile": "minimal"
 		}
 	}
 }
