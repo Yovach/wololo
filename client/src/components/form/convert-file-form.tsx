@@ -1,14 +1,12 @@
 "use client";
 
-import { FormEvent, memo, useCallback, useMemo, useState } from "preact/compat";
-import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
-import { getAvailableFormats } from "../../helpers/api";
-import { useFFmpeg } from "../../hooks/use-ffmpeg";
+import { useQuery } from "@tanstack/react-query";
 import mime from "mime/lite";
-
-type Props = {
-  availableFormatsPromise: ReturnType<typeof getAvailableFormats>;
-};
+import { TargetedSubmitEvent } from "preact";
+import { memo, useCallback, useMemo, useState } from "preact/compat";
+import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
+import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
+import { useFFmpeg } from "../../hooks/use-ffmpeg";
 
 const Translations = {
   video: "Video",
@@ -16,13 +14,11 @@ const Translations = {
   image: "Image",
 } as const;
 
-export const ConvertFileForm = memo(function ConvertFileForm({
-  availableFormatsPromise,
-}: Props) {
+export const ConvertFileForm = memo(function ConvertFileForm() {
   const { ffmpeg, isReady } = useFFmpeg();
   const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = useCallback(
-    async (evt: FormEvent<HTMLFormElement>) => {
+    async (evt: TargetedSubmitEvent<HTMLFormElement>) => {
       evt.preventDefault();
 
       const formData = new FormData(evt.currentTarget);
@@ -87,7 +83,11 @@ export const ConvertFileForm = memo(function ConvertFileForm({
   );
 
   // const formats = use(availableFormatsPromise).formats;
-  const formats = useMemo(() => [], []);
+  const { data: formats } = useQuery({
+    queryKey: ["available-formats"],
+    initialData: DEFAULT_FORMATS,
+    queryFn: () => getAvailableFormats().then((val) => val.formats),
+  });
   const groups = useMemo(
     () => Object.keys(formats) as unknown as (keyof typeof formats)[],
     [formats],

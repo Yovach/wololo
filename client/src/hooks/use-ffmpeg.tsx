@@ -1,7 +1,7 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { atom, useAtom } from "jotai";
 import ffmpegWorker from "@ffmpeg/ffmpeg/worker?url";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "preact/hooks";
 
 const ffmpegAtom = atom(new FFmpeg());
 

@@ -1,25 +1,22 @@
-import { Suspense } from "preact/compat";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConvertFileForm } from "./components/form/convert-file-form";
-import { Banner } from "./components/header/banner";
-import { Description } from "./components/header/description";
-import { Logo } from "./components/header/logo";
-import { getAvailableFormats } from "./helpers/api";
 import { DownloadFFmpegButton } from "./components/form/download-ffmpeg-button";
+import { Fragment } from "preact/jsx-runtime";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <>
-      <Logo />
+    <QueryClientProvider client={queryClient}>
+      <Fragment>
+        {/* <Logo />
       <Banner />
-      <Description />
-      <Suspense fallback={<span>Loading..</span>}>
-        <ConvertFileForm availableFormatsPromise={getAvailableFormats()} />
-      </Suspense>
+      <Description /> */}
+        <ConvertFileForm />
 
-      <Suspense>
         <DownloadFFmpegButton />
-      </Suspense>
-    </>
+      </Fragment>
+    </QueryClientProvider>
   );
 }
 
