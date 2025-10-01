@@ -1,16 +1,9 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { atom, useAtom } from "jotai";
 import ffmpegWorker from "@ffmpeg/ffmpeg/worker?url";
-import { useCallback, useEffect } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import { useSyncExternalStore } from "react-dom";
 
 export const ffmpegInstance = new FFmpeg();
-
-// This atom changes when FFmpeg has been loaded with core
-const isReadyAtom = atom(false);
-
-// This atom changes when FFmpeg is importing
-const isLoadingAtom = atom(false);
 
 const shouldAutomaticallyDownload = "auto-download-ffmpeg";
 
@@ -30,7 +23,7 @@ async function importFFmpeg() {
   };
 }
 
-type HookResult = {
+interface HookResult {
   isReady: boolean;
   isLoading: boolean;
   download: () => Promise<void>;
@@ -48,8 +41,8 @@ function subscribe(callback: (evt: StorageEvent) => void) {
 }
 
 export function useFFmpeg(): HookResult {
-  const [isReady, setIsReady] = useAtom(isReadyAtom);
-  const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
+  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const isDownloading = useSyncExternalStore(subscribe, getSnapshot);
 
   const download = useCallback(async (): Promise<void> => {
@@ -67,7 +60,7 @@ export function useFFmpeg(): HookResult {
 
     setIsReady(true);
     setIsLoading(false);
-  }, [setIsLoading, setIsReady]);
+  }, []);
 
   useEffect(() => {
     if (!isDownloading) {

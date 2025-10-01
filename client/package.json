@@ -31,7 +31,6 @@
     "@ffmpeg/core-mt": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@tanstack/react-query": "^5.90.2",
-    "jotai": "^2.15.0",
     "mime": "^4.1.0",
     "preact": "^10.27.2",
     "zod": "^4.1.11"
