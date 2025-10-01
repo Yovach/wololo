@@ -2,10 +2,13 @@ import { defineConfig } from "eslint/config";
 import globals from "globals";
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
-import pluginPreact from "eslint-config-preact";
+import pluginReact from "eslint-plugin-react";
+import * as reactHooks from "eslint-plugin-react-hooks";
 
 export default defineConfig([
   { ignores: ["dist/"] },
+  { settings: { react: { version: "detect" } } },
+  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     languageOptions: { globals: globals.browser },
@@ -16,5 +19,7 @@ export default defineConfig([
     extends: ["js/recommended"],
   },
   tseslint.configs.recommended,
-  ...pluginPreact,
+  pluginReact.configs.flat.recommended,
+  pluginReact.configs.flat["jsx-runtime"],
+  reactHooks.configs["recommended-latest"],
 ]);
