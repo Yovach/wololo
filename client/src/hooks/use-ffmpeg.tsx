@@ -2,8 +2,9 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { atom, useAtom } from "jotai";
 import ffmpegWorker from "@ffmpeg/ffmpeg/worker?url";
 import { useCallback, useEffect } from "preact/hooks";
+import { useSyncExternalStore } from "react-dom";
 
-const ffmpegAtom = atom(new FFmpeg());
+export const ffmpegInstance = new FFmpeg();
 
 // This atom changes when FFmpeg has been loaded with core
 const isReadyAtom = atom(false);
@@ -32,41 +33,51 @@ async function importFFmpeg() {
 type HookResult = {
   isReady: boolean;
   isLoading: boolean;
-  ffmpeg: FFmpeg;
   download: () => Promise<void>;
 };
 
+function getSnapshot() {
+  return localStorage.getItem(shouldAutomaticallyDownload) !== null;
+}
+
+function subscribe(callback: (evt: StorageEvent) => void) {
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+  };
+}
+
 export function useFFmpeg(): HookResult {
-  const [ffmpeg] = useAtom(ffmpegAtom);
   const [isReady, setIsReady] = useAtom(isReadyAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
+  const isDownloading = useSyncExternalStore(subscribe, getSnapshot);
 
   const download = useCallback(async (): Promise<void> => {
     setIsLoading(true);
-
     const ffmpegData = await importFFmpeg();
-    await ffmpeg.load({
-      wasmURL: ffmpegData.wasm.default,
-      coreURL: ffmpegData.core.default,
-      workerURL: ffmpegWorker,
-    });
-    localStorage.setItem(shouldAutomaticallyDownload, "1");
+
+    if (!ffmpegInstance.loaded) {
+      await ffmpegInstance.load({
+        wasmURL: ffmpegData.wasm.default,
+        coreURL: ffmpegData.core.default,
+        workerURL: ffmpegWorker,
+      });
+      localStorage.setItem(shouldAutomaticallyDownload, "1");
+    }
 
     setIsReady(true);
     setIsLoading(false);
-  }, [ffmpeg, setIsLoading, setIsReady]);
+  }, [setIsLoading, setIsReady]);
 
   useEffect(() => {
-    const value = localStorage.getItem(shouldAutomaticallyDownload);
-    if (value === null) {
+    if (!isDownloading) {
       return;
     }
 
     download();
-  }, [download]);
+  }, [download, isDownloading]);
 
   return {
-    ffmpeg,
     download,
     isReady,
     isLoading,

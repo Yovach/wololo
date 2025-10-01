@@ -6,7 +6,7 @@ import { TargetedSubmitEvent } from "preact";
 import { memo, useCallback, useMemo, useState } from "preact/compat";
 import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
-import { useFFmpeg } from "../../hooks/use-ffmpeg";
+import { ffmpegInstance, useFFmpeg } from "../../hooks/use-ffmpeg";
 
 const Translations = {
   video: "Video",
@@ -15,7 +15,7 @@ const Translations = {
 } as const;
 
 export const ConvertFileForm = memo(function ConvertFileForm() {
-  const { ffmpeg, isReady } = useFFmpeg();
+  const { isReady } = useFFmpeg();
   const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = useCallback(
     async (evt: TargetedSubmitEvent<HTMLFormElement>) => {
@@ -44,16 +44,19 @@ export const ConvertFileForm = memo(function ConvertFileForm() {
 
             const fileBytes = await file.arrayBuffer();
             const fileContent = new Uint8Array(fileBytes);
-            await ffmpeg.writeFile(file.name, fileContent);
+            await ffmpegInstance.writeFile(file.name, fileContent);
 
             fileName = `output.${format}`;
 
-            await ffmpeg.exec(["-i", file.name, fileName]);
+            await ffmpegInstance.exec(["-i", file.name, fileName]);
 
-            const data = await ffmpeg.readFile(fileName);
-            blob = new Blob([data], { type: mimeType });
-
-            ffmpeg.deleteFile(fileName);
+            const data = await ffmpegInstance.readFile(fileName);
+            if (typeof data !== "string") {
+              blob = new Blob([new Uint8Array(data)], { type: mimeType });
+              ffmpegInstance.deleteFile(fileName);
+            } else {
+              setErrorMessage("This format is not supported");
+            }
           }
         } else {
           const response = await sendConvertFileRequest(formData);
@@ -79,7 +82,7 @@ export const ConvertFileForm = memo(function ConvertFileForm() {
         URL.revokeObjectURL(tmpUrl);
       }
     },
-    [isReady, ffmpeg],
+    [isReady],
   );
 
   // const formats = use(availableFormatsPromise).formats;
