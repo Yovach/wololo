@@ -25,8 +25,8 @@ async function importFFmpeg() {
 interface HookResult {
   isReady: boolean;
   isLoading: boolean;
-  download: () => Promise<void>;
-};
+  download: (signal?: AbortSignal) => Promise<void>;
+}
 
 function getSnapshot() {
   return localStorage.getItem(shouldAutomaticallyDownload) !== null;
@@ -39,35 +39,56 @@ function subscribe(callback: (evt: StorageEvent) => void) {
   };
 }
 
-export function useFFmpeg(): HookResult {
-  const [isReady, setIsReady] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const isDownloading = useSyncExternalStore(subscribe, getSnapshot);
-
-  const download = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
-    const ffmpegData = await importFFmpeg();
-
-    if (!ffmpegInstance.loaded) {
-      await ffmpegInstance.load({
+async function downloadFFmpeg(signal?: AbortSignal) {
+  const ffmpegData = await importFFmpeg();
+  if (!ffmpegInstance.loaded) {
+    await ffmpegInstance.load(
+      {
         wasmURL: ffmpegData.wasm.default,
         coreURL: ffmpegData.core.default,
         workerURL: ffmpegWorker,
-      });
-      localStorage.setItem(shouldAutomaticallyDownload, "1");
-    }
+      },
+      {
+        signal,
+      },
+    );
+    localStorage.setItem(shouldAutomaticallyDownload, "1");
+  }
+}
+
+export function useFFmpeg(): HookResult {
+  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const isAutomaticallyDownloading = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => false,
+  );
+
+  const download = useCallback(async (signal?: AbortSignal): Promise<void> => {
+    setIsLoading(true);
+
+    await downloadFFmpeg(signal);
 
     setIsReady(true);
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!isDownloading) {
+    if (!isAutomaticallyDownloading) {
       return;
     }
 
-    download();
-  }, [download, isDownloading]);
+    const controller = new AbortController();
+
+    (async function () {
+      download(controller.signal);
+    })();
+
+    return () => {
+      controller.abort();
+    };
+  }, [download, isAutomaticallyDownloading]);
 
   return {
     download,
