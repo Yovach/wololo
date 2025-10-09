@@ -1,7 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo, NamedExoticComponent, useCallback } from "react";
 import { useFFmpeg } from "../../contexts/ffmpeg-context";
 
-export const DownloadFFmpegButton = memo(function DownloadFFmpegButton() {
+export const DownloadFFmpegButton: NamedExoticComponent = memo(function DownloadFFmpegButton() {
   const { download, isLoading } = useFFmpeg();
   const onClick = useCallback(() => download(), [download]);
 

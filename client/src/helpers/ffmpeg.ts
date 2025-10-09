@@ -2,7 +2,7 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import ffmpegWorker from "@ffmpeg/ffmpeg/worker?url";
 import { shouldAutomaticallyDownload } from "./constants";
 
-export const ffmpegInstance = new FFmpeg();
+export const ffmpegInstance: FFmpeg = new FFmpeg();
 
 export async function importFFmpeg(): Promise<{
   core: typeof import("*?url");
@@ -23,7 +23,7 @@ export async function importFFmpeg(): Promise<{
   };
 }
 
-export async function downloadFFmpeg(signal?: AbortSignal) {
+export async function downloadFFmpeg(signal?: AbortSignal): Promise<void> {
   const ffmpegData = await importFFmpeg();
   if (!ffmpegInstance.loaded) {
     await ffmpegInstance.load(

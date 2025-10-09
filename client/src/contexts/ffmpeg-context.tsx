@@ -1,4 +1,5 @@
 import {
+    Context,
   createContext,
   Dispatch,
   ReactNode,
@@ -11,6 +12,7 @@ import {
 } from "react";
 import { downloadFFmpeg, ffmpegInstance } from "../helpers/ffmpeg";
 import { shouldAutomaticallyDownload } from "../helpers/constants";
+import { JSX } from "react/jsx-runtime";
 
 interface FFmpegContext {
   isReady: boolean;
@@ -43,7 +45,7 @@ function subscribe(callback: (evt: StorageEvent) => void) {
   };
 }
 
-const FFmpegContext = createContext(initialValues);
+const FFmpegContext: Context<FFmpegContext> = createContext(initialValues);
 
 export function useFFmpeg(): FFmpegContext {
   const ffmpeg = useContext(FFmpegContext);
@@ -54,7 +56,7 @@ export function useFFmpeg(): FFmpegContext {
   return ffmpeg;
 }
 
-export function FFmpegProvider({ children }: { children: ReactNode }) {
+export function FFmpegProvider({ children }: { children: ReactNode }): JSX.Element {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const isAutomaticallyDownloading = useSyncExternalStore(

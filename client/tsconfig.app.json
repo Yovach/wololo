@@ -19,7 +19,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "erasableSyntaxOnly": true
+    "erasableSyntaxOnly": true,
+
+    "composite": true,
+    "isolatedDeclarations": false
   },
   "include": ["src"]
 }

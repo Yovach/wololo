@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import mime from "mime/lite";
-import { FormEvent, memo, useCallback, useMemo, useState } from "react";
+import { FormEvent, memo, NamedExoticComponent, useCallback, useMemo, useState } from "react";
 import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 import { useFFmpeg } from "../../contexts/ffmpeg-context";
@@ -14,7 +14,7 @@ const Translations = {
   image: "Image",
 } as const;
 
-export const ConvertFileForm = memo(function ConvertFileForm() {
+export const ConvertFileForm: NamedExoticComponent = memo(function ConvertFileForm() {
   const { isReady } = useFFmpeg();
   const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = useCallback(
