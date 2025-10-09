@@ -1,7 +1,7 @@
-FROM node:20-alpine AS builder
+FROM node:22-trixie-slim AS builder
 
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
 RUN npm ci
 
@@ -14,10 +14,10 @@ ENV VITE_BACK_URL=${VITE_BACK_URL}
 
 RUN npm run build
 
-FROM nginx:alpine
+FROM nginx:1.29.2-alpine-slim
 
 ARG PORT=80
-ENV NGINX=${PORT}
+ENV NGINX_PORT=${PORT}
 ENV NGINX_HOST=localhost
 
 EXPOSE ${PORT}
