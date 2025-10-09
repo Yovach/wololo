@@ -5,7 +5,8 @@ import mime from "mime/lite";
 import { FormEvent, memo, useCallback, useMemo, useState } from "react";
 import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
-import { ffmpegInstance, useFFmpeg } from "../../hooks/use-ffmpeg";
+import { useFFmpeg } from "../../contexts/ffmpeg-context";
+import { ffmpegInstance } from "../../helpers/ffmpeg";
 
 const Translations = {
   video: "Video",

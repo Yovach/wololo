@@ -4,18 +4,21 @@ import { Description } from "./components/header/description";
 import { Banner } from "./components/header/banner";
 import { Logo } from "./components/header/logo";
 import { DownloadFFmpegSection } from "./components/form/download-ffmpeg-section";
+import { FFmpegProvider } from "./contexts/ffmpeg-context";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Logo />
-      <Banner />
-      <Description />
-      <ConvertFileForm />
+      <FFmpegProvider>
+        <Logo />
+        <Banner />
+        <Description />
+        <ConvertFileForm />
 
-      <DownloadFFmpegSection />
+        <DownloadFFmpegSection />
+      </FFmpegProvider>
     </QueryClientProvider>
   );
 }
