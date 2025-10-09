@@ -1,7 +1,6 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import ffmpegWorker from "@ffmpeg/ffmpeg/worker?url";
-import { useCallback, useEffect, useState } from "preact/hooks";
-import { useSyncExternalStore } from "react-dom";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 export const ffmpegInstance = new FFmpeg();
 

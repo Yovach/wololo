@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConvertFileForm } from "./components/form/convert-file-form";
 import { DownloadFFmpegButton } from "./components/form/download-ffmpeg-button";
-import { Fragment } from "preact/jsx-runtime";
+import { Fragment } from "react";
 
 const queryClient = new QueryClient();
 

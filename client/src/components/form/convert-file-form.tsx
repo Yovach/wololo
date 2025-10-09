@@ -2,8 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import mime from "mime/lite";
-import { TargetedSubmitEvent } from "preact";
-import { memo, useCallback, useMemo, useState } from "preact/compat";
+import { FormEvent, memo, useCallback, useMemo, useState } from "react";
 import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 import { ffmpegInstance, useFFmpeg } from "../../hooks/use-ffmpeg";
@@ -18,7 +17,7 @@ export const ConvertFileForm = memo(function ConvertFileForm() {
   const { isReady } = useFFmpeg();
   const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = useCallback(
-    async (evt: TargetedSubmitEvent<HTMLFormElement>) => {
+    async (evt: FormEvent<HTMLFormElement>) => {
       evt.preventDefault();
 
       const formData = new FormData(evt.currentTarget);

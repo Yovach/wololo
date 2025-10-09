@@ -1,12 +1,17 @@
-import { StrictMode } from "preact/compat";
-import { render } from "preact";
+import { StrictMode } from "react";
 import App from "./App.tsx";
 import "modern-normalize/modern-normalize.css";
 import "./css/style.css";
+import { createRoot } from "react-dom/client";
 
-render(
+const appEl = document.getElementById("app");
+if (!appEl) {
+  throw new Error("Missing root");
+}
+
+const rootEl = createRoot(appEl);
+rootEl.render(
   <StrictMode>
     <App />
   </StrictMode>,
-  document.getElementById("app")!,
 );
