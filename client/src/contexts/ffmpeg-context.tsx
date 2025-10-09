@@ -1,5 +1,5 @@
 import {
-    Context,
+  Context,
   createContext,
   Dispatch,
   ReactNode,
@@ -56,7 +56,11 @@ export function useFFmpeg(): FFmpegContext {
   return ffmpeg;
 }
 
-export function FFmpegProvider({ children }: { children: ReactNode }): JSX.Element {
+export function FFmpegProvider({
+  children,
+}: {
+  children: ReactNode;
+}): JSX.Element {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const isAutomaticallyDownloading = useSyncExternalStore(

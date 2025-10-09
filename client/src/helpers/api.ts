@@ -13,7 +13,7 @@ const responseSchema = z.object({
   }),
 });
 
-type AvailableFormatsResponse = z.infer<typeof responseSchema>
+type AvailableFormatsResponse = z.infer<typeof responseSchema>;
 
 export const DEFAULT_FORMATS: Readonly<{
   image: readonly string[];
