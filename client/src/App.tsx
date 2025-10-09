@@ -1,21 +1,21 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConvertFileForm } from "./components/form/convert-file-form";
-import { DownloadFFmpegButton } from "./components/form/download-ffmpeg-button";
-import { Fragment } from "react";
+import { Description } from "./components/header/description";
+import { Banner } from "./components/header/banner";
+import { Logo } from "./components/header/logo";
+import { DownloadFFmpegSection } from "./components/form/download-ffmpeg-section";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Fragment>
-        {/* <Logo />
+      <Logo />
       <Banner />
-      <Description /> */}
-        <ConvertFileForm />
+      <Description />
+      <ConvertFileForm />
 
-        <DownloadFFmpegButton />
-      </Fragment>
+      <DownloadFFmpegSection />
     </QueryClientProvider>
   );
 }

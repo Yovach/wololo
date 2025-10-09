@@ -2,20 +2,14 @@ import { memo, useCallback } from "react";
 import { useFFmpeg } from "../../hooks/use-ffmpeg";
 
 export const DownloadFFmpegButton = memo(function DownloadFFmpegButton() {
-  const { download, isReady, isLoading } = useFFmpeg();
+  const { download, isLoading } = useFFmpeg();
   const onClick = useCallback(() => download(), [download]);
 
-  if (isReady) {
-    return null;
-  }
-
-  if (isLoading) {
-    return <span>Downloading..</span>;
-  }
-
   return (
-    <button type="button" onClick={onClick}>
-      Download ffmpeg
+    <button type="button" onClick={onClick} disabled={isLoading}>
+      {
+        isLoading ? "Downloading.." : "Download ffmpeg"
+      }
     </button>
   );
 });
