@@ -74,21 +74,9 @@ export function useFFmpeg(): HookResult {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (!isAutomaticallyDownloading) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    (async function () {
-      download(controller.signal);
-    })();
-
-    return () => {
-      controller.abort();
-    };
-  }, [download, isAutomaticallyDownloading]);
+  if (isAutomaticallyDownloading && !isLoading) {
+    download();
+  }
 
   return {
     download,
