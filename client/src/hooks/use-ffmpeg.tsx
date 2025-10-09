@@ -1,6 +1,6 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import ffmpegWorker from "@ffmpeg/ffmpeg/worker?url";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 
 export const ffmpegInstance = new FFmpeg();
 
@@ -62,19 +62,23 @@ export function useFFmpeg(): HookResult {
   const isAutomaticallyDownloading = useSyncExternalStore(
     subscribe,
     getSnapshot,
-    () => false,
   );
 
-  const download = useCallback(async (signal?: AbortSignal): Promise<void> => {
+  const download = useCallback(async (signal: AbortSignal | undefined = undefined): Promise<void> => {
     setIsLoading(true);
 
-    await downloadFFmpeg(signal);
+    try {
+      await downloadFFmpeg(signal);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsReady(ffmpegInstance.loaded)
+    }
 
-    setIsReady(true);
     setIsLoading(false);
   }, []);
 
-  if (isAutomaticallyDownloading && !isLoading) {
+  if (isAutomaticallyDownloading && !isLoading && !isReady) {
     download();
   }
 
