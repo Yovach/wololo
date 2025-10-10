@@ -6,7 +6,7 @@ install:
 
 .PHONY: build
 build:
-	$(dc) --file ./compose.dev.yml build
+	$(dc) --file ./compose.dev.yml build --no-cache
 
 .PHONY: up
 up:

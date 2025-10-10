@@ -1,11 +1,29 @@
-FROM node:22-trixie-slim AS builder
+ARG NODE_VERSION="node:22-trixie-slim"
 
+# Re-used across multiple stages
+FROM ${NODE_VERSION} AS base
+
+USER 1000
 WORKDIR /app
-COPY package*.json ./
+
+COPY --chown=1000:1000 package*.json ./
 
 RUN npm ci
 
-COPY . .
+COPY --chown=1000:1000 . .
+
+# Development stage
+FROM base AS development
+
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
+ENV HOSTNAME=0.0.0.0
+EXPOSE 5173
+
+CMD ["node", "--run", "dev", "--", "--host"]
+
+# Used for building the production assets
+FROM base AS builder
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
@@ -14,7 +32,8 @@ ENV VITE_BACK_URL=${VITE_BACK_URL}
 
 RUN node --run build
 
-FROM nginx:1.29.2-alpine-slim
+# Production stage
+FROM nginx:1.29.2-alpine-slim AS production
 
 ARG PORT=80
 ENV NGINX_PORT=${PORT}

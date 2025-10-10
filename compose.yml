@@ -10,6 +10,7 @@ services:
     build:
       context: ./client/
       dockerfile: Dockerfile
+      target: production
     networks:
       - wololo
 
