@@ -9,10 +9,6 @@ export default defineConfig({
       },
     }),
   ],
-  build: {
-    target: "ES2022",
-    minify: true,
-  },
   optimizeDeps: {
     exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/core"],
   },
