@@ -12,7 +12,7 @@ ENV NODE_ENV=${NODE_ENV}
 ARG VITE_BACK_URL="http://localhost:8080"
 ENV VITE_BACK_URL=${VITE_BACK_URL}
 
-RUN npm run build
+RUN node --run build
 
 FROM nginx:1.29.2-alpine-slim
 
