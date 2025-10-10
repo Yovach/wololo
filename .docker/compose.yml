@@ -1,14 +1,14 @@
 services:
   wololo-server:
     build:
-      context: ./server/
+      context: ../server/
       dockerfile: Dockerfile
     networks:
       - wololo
 
   wololo-client:
     build:
-      context: ./client/
+      context: ../client/
       dockerfile: Dockerfile
       target: production
     networks:

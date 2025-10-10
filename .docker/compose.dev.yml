@@ -1,11 +1,11 @@
 services:
   wololo-server:
     build:
-      context: ./server/
+      context: ../server/
       dockerfile: ./Dockerfile
     develop:
       watch:
-        - path: ./server
+        - path: ../server
           action: rebuild
     environment:
       - FRONT_URL=http://localhost:5173
@@ -16,14 +16,14 @@ services:
     depends_on:
       - wololo-server
     build:
-      context: ./client/
+      context: ../client/
       dockerfile: ./Dockerfile
       target: development
     develop:
       watch:
-        - path: ./client/package-lock.json
+        - path: ../client/package-lock.json
           action: rebuild
-        - path: ./client
+        - path: ../client
           action: sync
           target: /app
     command: npm run dev -- --host
