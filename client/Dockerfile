@@ -27,8 +27,10 @@ FROM base AS builder
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-ARG VITE_BACK_URL="http://localhost:8080"
-ENV VITE_BACK_URL=${VITE_BACK_URL}
+ARG VITE_BACK_URL
+ENV VITE_BACK_URL=${VITE_BACK_URL:-"http://localhost:8080"}
+
+RUN echo ${VITE_BACK_URL}
 
 RUN node --run build
 
