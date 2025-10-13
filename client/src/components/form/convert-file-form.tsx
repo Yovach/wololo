@@ -14,6 +14,7 @@ import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 import { useFFmpeg } from "../../contexts/ffmpeg-context";
 import { ffmpegInstance } from "../../helpers/ffmpeg";
+import { saveAs } from "file-saver";
 
 const Translations = {
   video: "Video",
@@ -82,12 +83,7 @@ export const ConvertFileForm: NamedExoticComponent = memo(
         }
 
         if (blob !== null && fileName !== null) {
-          const tmpUrl = URL.createObjectURL(blob);
-          const anchor = document.createElement("a");
-          anchor.href = tmpUrl;
-          anchor.download = fileName ?? crypto.randomUUID();
-          anchor.click();
-          URL.revokeObjectURL(tmpUrl);
+          saveAs(blob, fileName);
         }
       },
       [isReady],

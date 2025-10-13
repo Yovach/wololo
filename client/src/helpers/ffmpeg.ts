@@ -12,10 +12,12 @@ type FFmpegWasmType =
   | typeof import("@ffmpeg/core/wasm?url")
   | typeof import("@ffmpeg/core-mt/wasm?url");
 
-async function importFFmpeg(): Promise<Readonly<{
-  core: FFmpegCoreType;
-  wasm: FFmpegWasmType;
-}>> {
+async function importFFmpeg(): Promise<
+  Readonly<{
+    core: FFmpegCoreType;
+    wasm: FFmpegWasmType;
+  }>
+> {
   // If we can use SharedArrayBuffer, use ffmpeg multi-thread
   if ("SharedArrayBuffer" in window) {
     return Object.freeze({
