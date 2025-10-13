@@ -4,23 +4,31 @@ import { shouldAutomaticallyDownload } from "./constants";
 
 export const ffmpegInstance: FFmpeg = new FFmpeg();
 
-export async function importFFmpeg(): Promise<{
-  core: typeof import("*?url");
-  wasm: typeof import("*?url");
-}> {
+type FFmpegCoreType =
+  | typeof import("@ffmpeg/core?url")
+  | typeof import("@ffmpeg/core-mt?url");
+
+type FFmpegWasmType =
+  | typeof import("@ffmpeg/core/wasm?url")
+  | typeof import("@ffmpeg/core-mt/wasm?url");
+
+async function importFFmpeg(): Promise<Readonly<{
+  core: FFmpegCoreType;
+  wasm: FFmpegWasmType;
+}>> {
   // If we can use SharedArrayBuffer, use ffmpeg multi-thread
   if ("SharedArrayBuffer" in window) {
-    return {
+    return Object.freeze({
       core: await import("@ffmpeg/core-mt?url"),
       wasm: await import("@ffmpeg/core-mt/wasm?url"),
-    };
+    });
   }
 
   // Otherwise, use ffmpeg single-thread
-  return {
+  return Object.freeze({
     core: await import("@ffmpeg/core?url"),
     wasm: await import("@ffmpeg/core/wasm?url"),
-  };
+  });
 }
 
 export async function downloadFFmpeg(signal?: AbortSignal): Promise<void> {
