@@ -41,13 +41,13 @@ export const ConvertFileForm: NamedExoticComponent = memo(
             if (file instanceof File) {
               // Ensure format is string
               const format = formData.get("format");
-              if (typeof format !== "string") {
+              if (format == null || format instanceof File) {
                 throw new Error("Invalid format");
               }
 
               // Get mimeType from selected format and check if it's valid
               const mimeType = mime.getType(format);
-              if (typeof mimeType !== "string") {
+              if (mimeType == null) {
                 throw new Error("Invalid format");
               }
 
@@ -80,21 +80,21 @@ export const ConvertFileForm: NamedExoticComponent = memo(
         } catch (e) {
           console.error(e);
           setErrorMessage("An error occured");
-        }
-
-        if (blob !== null && fileName !== null) {
-          saveAs(blob, fileName);
+        } finally {
+          if (blob !== null && fileName !== null) {
+            saveAs(blob, fileName);
+          }
         }
       },
       [isReady],
     );
 
-    // const formats = use(availableFormatsPromise).formats;
     const { data: formats } = useQuery({
       queryKey: ["available-formats"],
       initialData: DEFAULT_FORMATS,
       queryFn: () => getAvailableFormats().then((val) => val.formats),
     });
+
     const groups = useMemo(
       () => Object.keys(formats) as unknown as (keyof typeof formats)[],
       [formats],
