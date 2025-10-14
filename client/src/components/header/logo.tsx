@@ -1,3 +1,7 @@
-export function Logo() {
-  return <img src="/src/images/logo_wololo.png" />;
-}
+import { JSX, memo, NamedExoticComponent } from "react";
+
+const imgUrl = new URL("../../images/logo_wololo.png", import.meta.url).href;
+
+export const Logo: NamedExoticComponent = memo(function Logo(): JSX.Element {
+  return <img src={imgUrl} />;
+});

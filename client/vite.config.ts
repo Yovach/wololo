@@ -1,9 +1,15 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import pluginReact from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    pluginReact({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
+  ],
   optimizeDeps: {
-    exclude: ["@ffmpeg/ffmpeg"],
+    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/core"],
   },
 });

@@ -1,10 +1,16 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "modern-normalize/modern-normalize.css";
 import "./css/style.css";
+import { createRoot } from "react-dom/client";
 
-createRoot(document.getElementById("app")!).render(
+const appEl = document.getElementById("app");
+if (!appEl) {
+  throw new Error("Missing root");
+}
+
+const rootEl = createRoot(appEl);
+rootEl.render(
   <StrictMode>
     <App />
   </StrictMode>,

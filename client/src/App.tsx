@@ -1,25 +1,26 @@
-import { Suspense } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConvertFileForm } from "./components/form/convert-file-form";
-import { Banner } from "./components/header/banner";
 import { Description } from "./components/header/description";
+import { Banner } from "./components/header/banner";
 import { Logo } from "./components/header/logo";
-import { getAvailableFormats } from "./helpers/api";
-import { DownloadFFmpegButton } from "./components/form/download-ffmpeg-button";
+import { DownloadFFmpegSection } from "./components/form/download-ffmpeg-section";
+import { FFmpegProvider } from "./contexts/ffmpeg-context";
+import { JSX } from "react/jsx-runtime";
 
-function App() {
+const queryClient = new QueryClient();
+
+function App(): JSX.Element {
   return (
-    <>
-      <Logo />
-      <Banner />
-      <Description />
-      <Suspense fallback={<span>Loading..</span>}>
-        <ConvertFileForm availableFormatsPromise={getAvailableFormats()} />
-      </Suspense>
+    <QueryClientProvider client={queryClient}>
+      <FFmpegProvider>
+        <Logo />
+        <Banner />
+        <Description />
+        <ConvertFileForm />
 
-      <Suspense>
-        <DownloadFFmpegButton />
-      </Suspense>
-    </>
+        <DownloadFFmpegSection />
+      </FFmpegProvider>
+    </QueryClientProvider>
   );
 }
 

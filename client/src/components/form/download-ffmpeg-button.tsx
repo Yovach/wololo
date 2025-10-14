@@ -1,20 +1,15 @@
-import { memo } from "react";
-import { useFFmpeg } from "../../hooks/use-ffmpeg";
+import { memo, NamedExoticComponent, useCallback } from "react";
+import { useFFmpeg } from "../../contexts/ffmpeg-context";
 
-export const DownloadFFmpegButton = memo(function DownloadFFmpegButton() {
-  const { download, isReady, isLoading } = useFFmpeg();
+export const DownloadFFmpegButton: NamedExoticComponent = memo(
+  function DownloadFFmpegButton() {
+    const { download, isLoading } = useFFmpeg();
+    const onClick = useCallback(() => download(), [download]);
 
-  if (isReady) {
-    return null;
-  }
-
-  if (isLoading) {
-    return <span>Downloading..</span>;
-  }
-
-  return (
-    <button type="button" onClick={download}>
-      Download ffmpeg
-    </button>
-  );
-});
+    return (
+      <button type="button" onClick={onClick} disabled={isLoading}>
+        {isLoading ? "Downloading.." : "Download ffmpeg"}
+      </button>
+    );
+  },
+);

@@ -8,7 +8,7 @@ WORKDIR /app
 COPY --chown=1000:1000 . /app
 RUN cargo build --release --locked
 
-FROM alpine:3.20
+FROM alpine:3.22.2
 RUN apk update && apk add --no-cache libgcc ffmpeg vips-tools
 COPY --from=builder /app/target/release/wololo-server /usr/local/bin/wololo-server
 
