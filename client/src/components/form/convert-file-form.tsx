@@ -15,6 +15,8 @@ import { sendConvertFileRequest } from "../../helpers/send-convert-file-request"
 import { useFFmpeg } from "../../contexts/ffmpeg-context";
 import { ffmpegInstance } from "../../helpers/ffmpeg";
 import { saveAs } from "file-saver";
+import { DropZone, Text } from "react-aria-components";
+import { UploadFileSection } from "./upload-file-section";
 
 const Translations = {
   video: "Video",
@@ -130,12 +132,8 @@ export const ConvertFileForm: NamedExoticComponent = memo(
               </select>
             </fieldset>
 
-            <fieldset>
-              <input type="file" name="file" required />
-            </fieldset>
+            <UploadFileSection />
           </div>
-
-          <button type="submit">Convert your file</button>
         </form>
 
         {errorMessage != null && (

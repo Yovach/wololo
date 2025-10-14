@@ -37,6 +37,7 @@
     "@types/react-dom": "^19.2.1",
     "file-saver": "^2.0.5",
     "mime": "^4.1.0",
+    "react-aria-components": "^1.13.0",
     "react-dom": "^19.2.0",
     "zod": "^4.1.12"
   }
