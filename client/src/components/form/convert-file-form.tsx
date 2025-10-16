@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import mime from "mime/lite";
 import {
   FormEvent,
@@ -10,13 +9,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DEFAULT_FORMATS, getAvailableFormats } from "../../helpers/api";
 import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 import { useFFmpeg } from "../../contexts/ffmpeg-context";
 import { ffmpegInstance } from "../../helpers/ffmpeg";
 import { saveAs } from "file-saver";
-import { DropZone, Text } from "react-aria-components";
 import { UploadFileSection } from "./upload-file-section";
+import { useGetSupportedFormats } from "../../api/get-supported-formats";
 
 const Translations = {
   video: "Video",
@@ -91,11 +89,7 @@ export const ConvertFileForm: NamedExoticComponent = memo(
       [isReady],
     );
 
-    const { data: formats } = useQuery({
-      queryKey: ["available-formats"],
-      initialData: DEFAULT_FORMATS,
-      queryFn: () => getAvailableFormats().then((val) => val.formats),
-    });
+    const { data: formats } = useGetSupportedFormats();
 
     const groups = useMemo(
       () => Object.keys(formats) as unknown as (keyof typeof formats)[],

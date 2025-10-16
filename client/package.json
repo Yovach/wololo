@@ -24,7 +24,8 @@
     "globals": "^16.4.0",
     "knip": "^5.65.0",
     "modern-normalize": "^3.0.1",
-    "prettier": "3.6.2",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.7.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",
     "vite": "^7.1.9"
@@ -33,12 +34,16 @@
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/core-mt": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
+    "@tailwindcss/vite": "^4.1.14",
     "@tanstack/react-query": "^5.90.2",
     "@types/react-dom": "^19.2.1",
     "file-saver": "^2.0.5",
+    "lucide-react": "^0.546.0",
     "mime": "^4.1.0",
     "react-aria-components": "^1.13.0",
     "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.14",
+    "tailwindcss-react-aria-components": "^2.0.1",
     "zod": "^4.1.12"
   }
 }
