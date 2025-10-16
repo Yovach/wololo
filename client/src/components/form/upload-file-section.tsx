@@ -1,24 +1,14 @@
-import {
-  ForwardRefExoticComponent,
-  memo,
-  RefObject,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
+import { memo, Suspense, useCallback, useState } from "react";
 import {
   Button,
-  DirectoryDropItem,
   DropZone,
-  DropZoneProps,
   FileDropItem,
   FileTrigger,
-  Text,
 } from "react-aria-components";
-import { useGetSupportedFormats } from "../../api/get-supported-formats";
-import { flatSupportedFormats } from "../../helpers/utils";
+import { getFilePreview, getFileType } from "../../helpers/utils";
 import { UploadIcon } from "lucide-react";
 import { DropEvent } from "@react-types/shared";
+import { FilePreview } from "../common/file-preview";
 
 export const UploadFileSection = memo(function UploadFileSection() {
   const [files, setFiles] = useState<File[]>([]);
@@ -39,14 +29,29 @@ export const UploadFileSection = memo(function UploadFileSection() {
 
   return (
     <section className="mt-16">
-      <DropZone onDrop={onDrop}>
+      <DropZone onDrop={onDrop} className="flex justify-center">
         <FileTrigger allowsMultiple onSelect={onSelect}>
-          <Button className="p-6 h-full bg-gray-200 rounded-xl cursor-pointer hover:scale-105 transition-all relative w-64 data-drop-target:border-amber-500 border-2 border-solid border-transparent flex justify-center items-center flex-col gap-y-2 shadow-lg hover:shadow-xl">
+          <Button className="relative flex h-full w-64 cursor-pointer flex-col items-center justify-center gap-y-2 rounded-xl border-2 border-solid border-transparent bg-gray-200 p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl data-drop-target:border-amber-500">
             <UploadIcon className="size-6" />
             <span className="text-base">Drop or click</span>
           </Button>
         </FileTrigger>
       </DropZone>
+
+      <Suspense>
+        <div className="m-4 grid grid-cols-5 gap-4">
+          {files.map((val) => {
+            return (
+              <FilePreview
+                key={`FilePreview.${val.name}`}
+                file={val}
+                fileType={getFileType(val)}
+                filePreviewUrl={getFilePreview(val)}
+              />
+            );
+          })}
+        </div>
+      </Suspense>
     </section>
   );
 });
