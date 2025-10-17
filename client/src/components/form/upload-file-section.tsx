@@ -41,14 +41,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
       <Suspense>
         <div className="m-4 grid grid-cols-5 gap-4">
           {files.map((val) => {
-            return (
-              <FilePreview
-                key={`FilePreview.${val.name}`}
-                file={val}
-                fileType={getFileType(val)}
-                filePreviewUrl={getFilePreview(val)}
-              />
-            );
+            return <FilePreview key={`FilePreview.${val.name}`} file={val} />;
           })}
         </div>
       </Suspense>

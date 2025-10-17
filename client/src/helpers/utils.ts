@@ -17,22 +17,40 @@ export async function getFileType(file: File) {
       !fileType?.mime.startsWith("image") &&
       !fileType?.mime.startsWith("video")
     ) {
-      return undefined;
+      return null;
     }
 
     return fileType;
   } catch (_) {
-    return undefined;
+    return null;
   }
 }
 
-export async function getFilePreview(
-  file: File,
-  seekTime = 0,
-): Promise<string> {
+interface Props {
+  url: string;
+  width: number;
+  height: number;
+}
+
+export async function getFilePreview(file: File, seekTime = 0): Promise<Props> {
+  console.log("getFilePreview");
+
   if (!file.type.startsWith("video/")) {
-    return URL.createObjectURL(file);
+    console.log("getFilePreview: not video");
+    return new Promise((resolve) => {
+      const image = new Image();
+      image.src = URL.createObjectURL(file);
+      image.onload = () => {
+        resolve({
+          url: image.src,
+          width: image.width,
+          height: image.height,
+        });
+      };
+    });
   }
+
+  console.log("getFilePreview: video");
 
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
@@ -78,7 +96,12 @@ export async function getFilePreview(
 
         const url = URL.createObjectURL(blob);
         cleanUp();
-        resolve(url);
+
+        resolve({
+          url,
+          width: canvas.width,
+          height: canvas.height,
+        });
       }, "image/jpeg");
     };
 
