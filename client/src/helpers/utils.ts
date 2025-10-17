@@ -39,7 +39,6 @@ export async function getFilePreview(file: File, seekTime = 0): Promise<Props> {
     console.log("getFilePreview: not video");
     return new Promise((resolve) => {
       const image = new Image();
-      image.src = URL.createObjectURL(file);
       image.onload = () => {
         resolve({
           url: image.src,
@@ -47,6 +46,7 @@ export async function getFilePreview(file: File, seekTime = 0): Promise<Props> {
           height: image.height,
         });
       };
+      image.src = URL.createObjectURL(file);
     });
   }
 

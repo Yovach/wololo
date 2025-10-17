@@ -9,14 +9,15 @@ interface Props {
 }
 
 export const FilePreview = memo(function FilePreview({ file }: Props) {
-  const { data: type } = useFileType(file);
-  const { data: filePreview } = useFilePreview(file);
+  const { data: type, error } = useFileType(file);
+  const { data: filePreview, error: error2 } = useFilePreview(file);
+  console.log(type, error, filePreview, error2)
   if (type == null) {
     return null;
   }
 
   return (
-    <div className="flex max-h-48 max-w-48 flex-col justify-evenly gap-2 overflow-clip rounded-lg bg-gray-100 p-4 shadow">
+    <div className="flex flex-col justify-between gap-2 overflow-clip h-full">
       {filePreview ? (
         <img
           src={filePreview?.url}
@@ -27,8 +28,9 @@ export const FilePreview = memo(function FilePreview({ file }: Props) {
           <LoaderCircle className="h-16 w-16 animate-spin text-gray-500" />
         </div>
       )}
+
       <span
-        className="max-w-32 overflow-clip text-nowrap text-ellipsis"
+        className="max-w-44 overflow-clip text-nowrap text-ellipsis"
         title={file.name}
       >
         {file.name}
