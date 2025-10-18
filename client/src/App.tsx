@@ -13,8 +13,12 @@ function App(): JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <FFmpegProvider>
+        <div>
+
         <Logo />
-        <UploadFileSection />
+        </div>
+
+          <UploadFileSection />
 
         <DownloadFFmpegSection />
       </FFmpegProvider>
