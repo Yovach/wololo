@@ -42,6 +42,7 @@
     "file-saver": "^2.0.5",
     "file-type": "^21.1.0",
     "lucide-react": "^0.553.0",
+    "mediabunny": "^1.24.5",
     "mime": "^4.1.0",
     "react-aria-components": "^1.13.0",
     "react-dom": "^19.2.0",
