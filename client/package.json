@@ -45,7 +45,9 @@
     "mime": "^4.1.0",
     "react-aria-components": "^1.13.0",
     "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
+    "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.1",
     "zod": "^4.1.12"
   }
