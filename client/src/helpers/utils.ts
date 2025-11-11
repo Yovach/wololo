@@ -1,4 +1,6 @@
 import { fileTypeFromBlob } from "file-type";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function flatSupportedFormats(
   formats: Readonly<{
@@ -26,7 +28,7 @@ export async function getFileType(file: File) {
   }
 }
 
-interface Props {
+export interface Props {
   url: string;
   width: number;
   height: number;
@@ -108,4 +110,8 @@ export async function getFilePreview(file: File, seekTime = 0): Promise<Props> {
     video.src = URL.createObjectURL(file);
     video.load();
   });
+}
+
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }

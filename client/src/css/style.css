@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "tailwindcss-react-aria-components";
+@plugin "tailwindcss-animate";
 
 /* :root { */
 /*   --bg-color: #f9fafb; */

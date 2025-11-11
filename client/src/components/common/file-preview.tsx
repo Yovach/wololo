@@ -1,8 +1,7 @@
-import { FileTypeResult } from "file-type";
-import { memo, use } from "react";
+import { LoaderCircle } from "lucide-react";
+import { memo } from "react";
 import { useFilePreviewUrl as useFilePreview } from "../../hooks/use-file-preview-url";
 import { useFileType } from "../../hooks/use-file-type";
-import { Loader, LoaderCircle } from "lucide-react";
 
 interface Props {
   file: File;
