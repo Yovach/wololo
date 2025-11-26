@@ -35,7 +35,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
     );
     console.log("set files", files);
     uploadFiles(files);
-  }, []);
+  }, [uploadFiles]);
 
   const onSelect = useCallback((fileList: FileList | null) => {
     if (fileList == null) {
@@ -44,7 +44,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
 
     console.log("set files", fileList);
     uploadFiles(Array.from(fileList));
-  }, []);
+  }, [uploadFiles]);
 
   return (
     <section className="mx-4">
@@ -60,9 +60,8 @@ export const UploadFileSection = memo(function UploadFileSection() {
       <div className="flex gap-x-4">
         <Button>Select all</Button>
         <ConvertAllButton
-          nbSelectedElements={
-            selectedFiles === "all" ? files.length : selectedFiles.size
-          }
+          files={files}
+          selectedFiles={selectedFiles}
         />
       </div>
 

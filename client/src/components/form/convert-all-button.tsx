@@ -5,17 +5,23 @@ import {
   DialogTrigger,
   Heading,
   Modal,
-  ModalOverlay
+  ModalOverlay,
+  Selection,
 } from "react-aria-components";
 import { cn } from "../../helpers/utils";
+import { ConvertFileForm } from "./convert-file-form";
 
 interface Props {
-  nbSelectedElements: number;
+  files: File[];
+  selectedFiles: Selection;
 }
 
 export const ConvertAllButton = memo(function ConvertAll({
-  nbSelectedElements,
+  selectedFiles,
+  files,
 }: Props) {
+  const nbSelectedElements: number =
+    selectedFiles === "all" ? files.length : selectedFiles.size;
   return (
     <DialogTrigger>
       <Button>Convert {nbSelectedElements} elements</Button>
@@ -23,8 +29,8 @@ export const ConvertAllButton = memo(function ConvertAll({
         className={({ isEntering, isExiting }) =>
           cn(
             "absolute top-0 left-0 isolate z-10 h-(--page-height) w-full bg-black/25 backdrop-blur",
-            isEntering && "animate-in fade-in duration-300 ease-out",
-            isExiting && "animate-out fade-out duration-200 ease-in",
+            isEntering && "duration-300 ease-out animate-in fade-in",
+            isExiting && "duration-200 ease-in animate-out fade-out",
           )
         }
       >
@@ -32,8 +38,8 @@ export const ConvertAllButton = memo(function ConvertAll({
           className={({ isEntering, isExiting }) =>
             cn(
               "sticky top-0 left-0 box-border flex h-(--visual-viewport-height) w-full items-center justify-center p-4 text-center",
-              isEntering && "animate-in zoom-in-95 duration-300 ease-out",
-              isExiting && "animate-out zoom-out-95 duration-200 ease-in",
+              isEntering && "duration-300 ease-out animate-in zoom-in-95",
+              isExiting && "duration-200 ease-in animate-out zoom-out-95",
             )
           }
         >
@@ -49,9 +55,7 @@ export const ConvertAllButton = memo(function ConvertAll({
                 >
                   Convert files
                 </Heading>
-                <p className="mt-3 text-slate-500">
-                  You are going to convert files
-                </p>
+                <ConvertFileForm />
                 <div className="mt-6 flex justify-end gap-2">
                   <Button
                     className="bg-slate-200 text-slate-800 hover:border-slate-300 pressed:bg-slate-300"

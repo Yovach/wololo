@@ -125,8 +125,6 @@ export const ConvertFileForm: NamedExoticComponent = memo(
                 ))}
               </select>
             </fieldset>
-
-            <UploadFileSection />
           </div>
         </form>
 
