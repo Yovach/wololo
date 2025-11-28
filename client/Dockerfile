@@ -1,4 +1,4 @@
-ARG NODE_VERSION="node:22-trixie-slim"
+ARG NODE_VERSION="node:24-trixie-slim"
 
 # Re-used across multiple stages
 FROM ${NODE_VERSION} AS base
