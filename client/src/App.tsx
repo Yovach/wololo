@@ -13,7 +13,7 @@ function App(): JSX.Element {
       <FFmpegProvider>
         <div>
 
-        <Logo />
+        {/* <Logo /> */}
         </div>
 
           <UploadFileSection />
