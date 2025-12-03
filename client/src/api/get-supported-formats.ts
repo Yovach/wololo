@@ -5,7 +5,7 @@ export function useGetSupportedFormats(): DefinedUseQueryResult<
   readonly {
     type: string;
     label: string;
-    items: readonly string[];
+    items: readonly { name: string }[];
   }[],
   Error
 > {

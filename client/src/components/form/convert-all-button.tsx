@@ -13,6 +13,7 @@ import {
 import { cn } from "../../helpers/utils";
 import { ConvertFileForm } from "./convert-file-form";
 import { convertToImage, downloadFile } from "../../helpers/converter";
+import { OutputFormatSelector } from "./output-format-selector";
 
 interface Props {
   files: File[];
@@ -58,6 +59,7 @@ export const ConvertAllButton = memo(function ConvertAll({
     setMaxProgression(undefined);
     setProgression(undefined);
     convertedFiles.forEach((file) => {
+      console.log(file);
       downloadFile(file);
     });
   }, [files]);
@@ -117,7 +119,11 @@ export const ConvertAllButton = memo(function ConvertAll({
                   )}
                 </ProgressBar>
                 {/* )} */}
-                <ConvertFileForm />
+                <OutputFormatSelector
+                  onSelectOutput={() => {
+                    console.log("id");
+                  }}
+                />
                 <div className="mt-6 flex justify-end gap-2">
                   <Button
                     className="bg-slate-200 text-slate-800 hover:border-slate-300 pressed:bg-slate-300"

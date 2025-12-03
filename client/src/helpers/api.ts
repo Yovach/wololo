@@ -5,13 +5,15 @@ import {
   SUPPORTED_VIDEO_FORMATS,
 } from "./supported-formats";
 
-const responseSchema = z.array(
-  z.object({
-    type: z.string(),
-    label: z.string(),
-    items: z.array(z.string()).readonly(),
-  }),
-).readonly();
+const responseSchema = z
+  .array(
+    z.object({
+      type: z.string(),
+      label: z.string(),
+      items: z.array(z.object({ name: z.string() })).readonly(),
+    }),
+  )
+  .readonly();
 
 type AvailableFormatsResponse = z.infer<typeof responseSchema>;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { saveAs } from "file-saver";
 import mime from "mime/lite";
 import {
   FormEvent,
@@ -9,12 +10,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
+import { useGetSupportedFormats } from "../../api/get-supported-formats";
 import { useFFmpeg } from "../../contexts/ffmpeg-context";
 import { ffmpegInstance } from "../../helpers/ffmpeg";
-import { saveAs } from "file-saver";
-import { UploadFileSection } from "./upload-file-section";
-import { useGetSupportedFormats } from "../../api/get-supported-formats";
+import { sendConvertFileRequest } from "../../helpers/send-convert-file-request";
 
 const Translations = {
   video: "Video",

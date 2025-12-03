@@ -21,7 +21,7 @@ const filteredMimes = Object.entries(mime).filter(([key, value]) => {
   return value.extensions != null && value.extensions.length > 0;
 });
 
-const videoFormats: string[] = filteredMimes
+const videoFormats: { name: string }[] = filteredMimes
   .filter(
     ([key, value]) => key.startsWith("video") && value.extensions?.[0] != null,
   )
@@ -31,14 +31,13 @@ const videoFormats: string[] = filteredMimes
       throw new Error("Can't be here");
     }
 
-    return firstExtension;
+    return { name: firstExtension };
   });
 
 /// List of supported output file extensions for videos
-export const SUPPORTED_VIDEO_FORMATS: readonly string[] =
-  Object.freeze(videoFormats);
+export const SUPPORTED_VIDEO_FORMATS = Object.freeze(videoFormats);
 
-const audioFormats: string[] = filteredMimes
+const audioFormats: { name: string }[] = filteredMimes
   .filter(
     ([key, value]) => key.startsWith("audio") && value.extensions?.[0] != null,
   )
@@ -48,14 +47,13 @@ const audioFormats: string[] = filteredMimes
       throw new Error("Can't be here");
     }
 
-    return firstExtension;
+    return { name: firstExtension };
   });
 
 /// List of supported output file extensions for audios
-export const SUPPORTED_AUDIO_FORMATS: readonly string[] =
-  Object.freeze(audioFormats);
+export const SUPPORTED_AUDIO_FORMATS = Object.freeze(audioFormats);
 
-const imageFormats: string[] = filteredMimes
+const imageFormats: { name: string }[] = filteredMimes
   .filter(
     ([key, value]) => key.startsWith("image") && value.extensions?.[0] != null,
   )
@@ -65,9 +63,8 @@ const imageFormats: string[] = filteredMimes
       throw new Error("Can't be here");
     }
 
-    return firstExtension;
+    return { name: firstExtension };
   });
 
 /// List of supported output file extensions for images
-export const SUPPORTED_IMAGE_FORMATS: readonly string[] =
-  Object.freeze(imageFormats);
+export const SUPPORTED_IMAGE_FORMATS = Object.freeze(imageFormats);
