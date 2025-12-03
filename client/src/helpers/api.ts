@@ -5,32 +5,39 @@ import {
   SUPPORTED_VIDEO_FORMATS,
 } from "./supported-formats";
 
-const responseSchema = z.object({
-  formats: z.object({
-    image: z.array(z.string()).readonly(),
-    video: z.array(z.string()).readonly(),
-    audio: z.array(z.string()).readonly(),
+const responseSchema = z.array(
+  z.object({
+    type: z.string(),
+    label: z.string(),
+    items: z.array(z.string()).readonly(),
   }),
-});
+).readonly();
 
 type AvailableFormatsResponse = z.infer<typeof responseSchema>;
 
-export const DEFAULT_FORMATS: Readonly<{
-  image: readonly string[];
-  video: readonly string[];
-  audio: readonly string[];
-}> = Object.freeze({
-  image: SUPPORTED_IMAGE_FORMATS,
-  video: SUPPORTED_VIDEO_FORMATS,
-  audio: SUPPORTED_AUDIO_FORMATS,
-});
+export const DEFAULT_FORMATS = Object.freeze([
+  {
+    type: "image",
+    label: "Image",
+    items: SUPPORTED_IMAGE_FORMATS,
+  },
+  {
+    type: "video",
+    label: "Vidéo",
+    items: SUPPORTED_VIDEO_FORMATS,
+  },
+  {
+    type: "audio",
+    label: "Audio",
+    items: SUPPORTED_AUDIO_FORMATS,
+  },
+]);
 
 export async function getAvailableFormats(): Promise<AvailableFormatsResponse> {
   try {
     const request = await fetch(
       `${import.meta.env.VITE_BACK_URL}/available-formats`,
     );
-
     if (request.ok) {
       const result = await request.json();
       return responseSchema.parse(result);
@@ -39,7 +46,5 @@ export async function getAvailableFormats(): Promise<AvailableFormatsResponse> {
     console.error(e);
   }
 
-  return {
-    formats: DEFAULT_FORMATS,
-  };
+  return DEFAULT_FORMATS;
 }
