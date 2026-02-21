@@ -5,7 +5,12 @@ import {
   Input,
   UrlSource,
 } from "mediabunny";
-import type { FilePreviewData } from "./utils";
+
+export interface FilePreviewData {
+  url: string;
+  width: number;
+  height: number;
+}
 
 // Use Mediabunny to generate video thumbnail
 export async function getVideoThumbnail(file: File): Promise<FilePreviewData> {
@@ -77,4 +82,25 @@ export async function getVideoThumbnail(file: File): Promise<FilePreviewData> {
     width,
     url: URL.createObjectURL(blob),
   };
+}
+
+export async function getImageThumbnail(file: File): Promise<FilePreviewData> {
+  return new Promise((resolve, reject) => {
+    let image: HTMLImageElement | null = new Image();
+    image.onload = () => {
+      if (image) {
+        resolve({
+          url: image.src,
+          width: image.width,
+          height: image.height,
+        });
+
+        image.remove();
+
+        image = null;
+      }
+    };
+    image.onerror = (err) => reject(err);
+    image.src = URL.createObjectURL(file);
+  });
 }
