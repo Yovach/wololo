@@ -1,7 +1,7 @@
 import { DropEvent, Selection } from "@react-types/shared";
 import { clsx } from "clsx";
-import { CircleCheck, UploadIcon } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { CircleCheck, FileUpIcon, UploadIcon } from "lucide-react";
+import { Activity, memo, useCallback, useState } from "react";
 import {
   Button,
   DropZone,
@@ -9,7 +9,7 @@ import {
   FileTrigger,
   ListBox,
   ListBoxItem,
-  Text
+  Text,
 } from "react-aria-components";
 import { FilePreview } from "../common/file-preview";
 import { ConvertAllButton } from "./convert-all-button";
@@ -21,55 +21,67 @@ export const UploadFileSection = memo(function UploadFileSection() {
 
   const uploadFiles = useCallback((fileList: File[]) => {
     setFiles((current) => {
-      const currentNames = current.map((file) => file.name);
-      return [...current, ...Array.from(fileList).filter((file) => !currentNames.includes(file.name))];
+      const currentNames = new Set(current.map((file) => file.name));
+
+      const result = [
+        ...current,
+        ...fileList.filter((file) => !currentNames.has(file.name)),
+      ];
+
+      return result;
     });
   }, []);
 
-  const onDrop = useCallback(async (evt: DropEvent) => {
-    const fileDroppedItems: FileDropItem[] = evt.items.filter(
-      (file) => file.kind === "file",
-    );
-    const files = await Promise.all(
-      fileDroppedItems.map((file) => file.getFile()),
-    );
-    console.log("set files", files);
-    uploadFiles(files);
-  }, [uploadFiles]);
+  const onDrop = useCallback(
+    async (evt: DropEvent) => {
+      const fileDroppedItems: FileDropItem[] = evt.items.filter(
+        (file) => file.kind === "file",
+      );
 
-  const onSelect = useCallback((fileList: FileList | null) => {
-    if (fileList == null) {
-      return;
-    }
+      const files = await Promise.all(
+        fileDroppedItems.map((file) => file.getFile()),
+      );
+      uploadFiles(files);
+    },
+    [uploadFiles],
+  );
 
-    console.log("set files", fileList);
-    uploadFiles(Array.from(fileList));
-  }, [uploadFiles]);
+  const onSelect = useCallback(
+    (fileList: FileList | null) => {
+      if (fileList == null) {
+        return;
+      }
+
+      console.log("set files", fileList);
+      uploadFiles(Array.from(fileList));
+    },
+    [uploadFiles],
+  );
+
+  console.log(files);
 
   return (
     <section className="mx-4">
       <DropZone onDrop={onDrop} className="flex justify-center">
         <FileTrigger allowsMultiple onSelect={onSelect}>
-          <Button className="relative flex h-full w-64 cursor-pointer flex-col items-center justify-center gap-y-2 rounded-xl border-2 border-solid border-transparent bg-gray-200 p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl data-drop-target:border-amber-500">
-            <UploadIcon className="size-6" />
-            <span className="text-base">Drop or click</span>
+          <Button className="relative flex h-40 w-92 cursor-pointer flex-col items-center justify-center gap-y-2 rounded-xl border-2 border-solid border-transparent bg-gray-200 px-12 py-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl drop-target:border-amber-500">
+            <FileUpIcon className="size-6" />
+            <span className="text-base">Drop or click to start converting</span>
           </Button>
         </FileTrigger>
       </DropZone>
 
-      <div className="flex gap-x-4">
-        <Button>Select all</Button>
-        <ConvertAllButton
-          files={files}
-          selectedFiles={selectedFiles}
-        />
-      </div>
+      {/*<div className="flex gap-x-4">
+          <Button>Select all</Button>
+          <ConvertAllButton files={files} selectedFiles={selectedFiles} />
+        </div>*/}
 
       <div className="mt-6 h-[420px] w-full lg:max-w-5xl">
         <ListBox
           selectionMode="multiple"
           className="grid auto-rows-fr grid-cols-5 gap-4"
           items={files}
+          aria-label="Uploaded files"
           selectedKeys={selectedFiles}
           onSelectionChange={setSelectedFiles}
         >
@@ -83,10 +95,10 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 <div className="flex flex-row gap-x-4">
                   <div
                     className={clsx(
-                      "flex size-8 items-center justify-center rounded-full bg-white/10 opacity-0 transition-all group-hover:opacity-50 group-data-selected:opacity-100",
+                      "flex size-8 items-center justify-center rounded-full bg-white/10 opacity-0 transition-all group-hover:opacity-50 group-selected:opacity-100",
                     )}
                   >
-                    <CircleCheck className="size-4 fill-white text-black/25 group-data-selected:text-blue-500" />
+                    <CircleCheck className="size-4 fill-white text-black/25 group-selected:text-blue-500" />
                   </div>
                   <Text className="w-fit overflow-auto text-sm text-ellipsis text-gray-700">
                     {item.name}

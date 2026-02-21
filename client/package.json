@@ -46,7 +46,7 @@
     "mediabunny": "^1.24.5",
     "mime": "^4.1.0",
     "mime-db": "^1.54.0",
-    "react-aria-components": "^1.13.0",
+    "react-aria-components": "^1.15.1",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
