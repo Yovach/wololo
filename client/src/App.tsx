@@ -10,7 +10,6 @@ const queryClient = new QueryClient();
 function App(): JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
-      <FFmpegProvider>
         <div>
 
         {/* <Logo /> */}
@@ -18,8 +17,6 @@ function App(): JSX.Element {
 
           <UploadFileSection />
 
-        <DownloadFFmpegSection />
-      </FFmpegProvider>
     </QueryClientProvider>
   );
 }

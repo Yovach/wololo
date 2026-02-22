@@ -2,11 +2,34 @@ import type { DropEvent, FileDropItem, Selection } from "@react-types/shared";
 import { filesize } from "filesize";
 import { FileUpIcon } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-import { FileTrigger } from "react-aria-components";
+import { FileTrigger, Key } from "react-aria-components";
 import { isFileSupported } from "../../helpers/utils";
 import { Button } from "../react-aria/Button";
 import { DropZone } from "../react-aria/DropZone";
-import { Cell, Column, Row, Table, TableBody, TableHeader } from "../react-aria/Table";
+import {
+  Cell,
+  Column,
+  Row,
+  Table,
+  TableBody,
+  TableHeader,
+} from "../react-aria/Table";
+import { ConvertFileForm } from "./convert-file-form";
+import { FilePreview } from "../common/file-preview";
+import { ConvertAllButton } from "./convert-all-button";
+import { Select, SelectItem } from "../react-aria/Select";
+import {
+  ALL_FORMATS,
+  BlobSource,
+  Input,
+  Mp4InputFormat,
+  Output,
+  OutputFormat,
+} from "mediabunny";
+import {
+  getOutputFormatByMime,
+  SUPPORTED_MIME_TYPES,
+} from "../../helpers/output";
 
 const columns = [
   { name: "Name", id: "name", isRowHeader: true },
@@ -18,15 +41,19 @@ const columns = [
 interface TableRow {
   name: string;
   size: string;
+  file: File;
 }
 
 export const UploadFileSection = memo(function UploadFileSection() {
   const [files, setFiles] = useState<File[]>([]);
+  const [selectedFormat, setSelectedFormat] = useState<Key | null>(null);
+
   const tableRows = useMemo((): TableRow[] => {
     return files.map((file) => {
       return {
         name: file.name,
         size: filesize(file.size, { locale: true }),
+        file,
       };
     });
   }, [files]);
@@ -72,6 +99,36 @@ export const UploadFileSection = memo(function UploadFileSection() {
     [uploadFiles],
   );
 
+  const uniqueSelectedMediaTypes = useMemo(() => {
+    const formats =
+      selectedFiles === "all"
+        ? files.map((file) => file.type)
+        : [...selectedFiles.values()].map((file) => {
+            return files.find((f) => f.name === file)?.type;
+          });
+
+    return new Set(
+      formats
+        .map((format) => format?.split("/", 1)[0])
+        .filter((format) => format != null),
+    );
+  }, [selectedFiles, files]);
+
+  const availableOutputFormats = useMemo(() => {
+    const file = files.at(0);
+    if (!file) {
+      return [];
+    }
+
+    const result =
+      SUPPORTED_MIME_TYPES[file.type as keyof typeof SUPPORTED_MIME_TYPES];
+    if (!result) {
+      return [];
+    }
+
+    return result.map((val) => ({ id: val, name: val }));
+  }, [files]);
+
   return (
     <section className="mx-4">
       <div className="flex">
@@ -91,47 +148,92 @@ export const UploadFileSection = memo(function UploadFileSection() {
         )}*/}
       </div>
 
-      <div className="mt-6 h-[420px] w-full lg:max-w-5xl">
-        <Table
-          selectionMode="multiple"
-          // className="grid auto-rows-fr grid-cols-5 gap-4"
-          aria-label="Uploaded files"
-          selectedKeys={selectedFiles}
-          onSelectionChange={setSelectedFiles}
-        >
-          <TableHeader columns={columns}>
-            {(column) => <Column>{column.name}</Column>}
-          </TableHeader>
-          <TableBody items={tableRows}>
-            {(item) => {
-              return (
-                <Row
-                  id={item.name}
-                  columns={columns}
-                  // className="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-gray-100 p-4 shadow transition-all hover:scale-105 hover:bg-gray-100/75"
-                >
-                  {(column) => <Cell>{item[column.id]}</Cell>}
-                  {/*<div className="flex flex-row gap-x-4">
-                    <div
-                      className={clsx(
-                        "flex size-8 items-center justify-center rounded-full bg-white/10 opacity-0 transition-all group-hover:opacity-50 group-selected:opacity-100",
-                      )}
-                    >
-                      <CircleCheck className="size-4 fill-white text-black/25 group-selected:text-blue-500" />
-                    </div>
-                    <Text className="w-fit overflow-auto text-sm text-ellipsis text-gray-700">
-                      {item.name}
-                    </Text>
-                  </div>
-                  <div className="mt-4 flex flex-row justify-center">
-                    <FilePreview file={item} />
-                  </div>*/}
-                </Row>
-              );
-            }}
-          </TableBody>
-        </Table>
-      </div>
+      {files.length > 0 && (
+        <div className="mt-6 h-[420px] w-full lg:max-w-5xl">
+          <Table
+            selectionMode="single"
+            // className="grid auto-rows-fr grid-cols-5 gap-4"
+            aria-label="Uploaded files"
+            selectedKeys={selectedFiles}
+            onSelectionChange={setSelectedFiles}
+          >
+            <TableHeader columns={columns}>
+              {(column) => <Column>{column.name}</Column>}
+            </TableHeader>
+            <TableBody items={tableRows}>
+              {(item) => {
+                return (
+                  <Row
+                    id={item.name}
+                    columns={columns}
+                    // className="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-gray-100 p-4 shadow transition-all hover:scale-105 hover:bg-gray-100/75"
+                  >
+                    {(column) => {
+                      return (
+                        <Cell>
+                          <div className="inline-flex items-center gap-x-3">
+                            {column.id === "name" && (
+                              <FilePreview file={item.file} size={32} />
+                            )}
+                            {item[column.id]}
+                          </div>
+                        </Cell>
+                      );
+                    }}
+                    {/*<div className="flex flex-row gap-x-4">
+                        <div
+                          className={clsx(
+                            "flex size-8 items-center justify-center rounded-full bg-white/10 opacity-0 transition-all group-hover:opacity-50 group-selected:opacity-100",
+                          )}
+                        >
+                          <CircleCheck className="size-4 fill-white text-black/25 group-selected:text-blue-500" />
+                        </div>
+                        <Text className="w-fit overflow-auto text-sm text-ellipsis text-gray-700">
+                          {item.name}
+                        </Text>
+                      </div>
+                      <div className="mt-4 flex flex-row justify-center">
+                        <FilePreview file={item} />
+                      </div>*/}
+                  </Row>
+                );
+              }}
+            </TableBody>
+          </Table>
+
+          <div className="px-4 py-2">
+            <div>
+              <Select
+                items={availableOutputFormats}
+                onChange={(value) => {
+                  setSelectedFormat(value);
+                }}
+              >
+                {(item) => {
+                  return <SelectItem>{item.name}</SelectItem>;
+                }}
+              </Select>
+            </div>
+
+            <Button
+              onClick={async (val) => {
+                if (!selectedFormat) {
+                  return;
+                }
+
+                console.log("ici");
+                const outputFormat =
+                  await getOutputFormatByMime(selectedFormat);
+                console.log("ici");
+                const output = new outputFormat();
+                console.log(output.mimeType);
+              }}
+            >
+              Convert selected files {selectedFormat}
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   );
 });
