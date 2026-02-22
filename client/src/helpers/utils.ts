@@ -31,10 +31,10 @@ export async function getFileType(file: File) {
 }
 
 
-export async function getFilePreview(file: File): Promise<FilePreviewData> {
+export async function getFilePreview(file: File, size: number): Promise<FilePreviewData> {
   // Files with "image/*" mimetype can use browser elements
   if (file.type.startsWith("image/")) {
-    return await getImageThumbnail(file);
+    return await getImageThumbnail(file, size);
   }
 
   return await getVideoThumbnail(file);

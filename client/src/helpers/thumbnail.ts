@@ -84,9 +84,12 @@ export async function getVideoThumbnail(file: File): Promise<FilePreviewData> {
   };
 }
 
-export async function getImageThumbnail(file: File): Promise<FilePreviewData> {
+export async function getImageThumbnail(file: File, size: number): Promise<FilePreviewData> {
   return new Promise((resolve, reject) => {
     let image: HTMLImageElement | null = new Image();
+    image.height = size;
+    image.width = size;
+
     image.onload = () => {
       if (image) {
         resolve({

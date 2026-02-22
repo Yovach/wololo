@@ -6,5 +6,6 @@ export function useFileType(file: File) {
     initialData: null,
     queryKey: ["file-type", file.name],
     queryFn: () => getFileType(file),
+    refetchOnWindowFocus: false,
   });
 }
