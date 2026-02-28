@@ -1,11 +1,23 @@
 import type { DropEvent, FileDropItem, Selection } from "@react-types/shared";
 import { filesize } from "filesize";
 import { FileUpIcon } from "lucide-react";
+import {
+  ALL_FORMATS,
+  BlobSource,
+  BufferTarget,
+  Conversion,
+  Input,
+  Output,
+} from "mediabunny";
 import { memo, useCallback, useMemo, useState } from "react";
 import { FileTrigger, Key } from "react-aria-components";
+import { downloadFile } from "../../helpers/converter";
+import { OUTPUT_FORMAT_CONVERTERS } from "../../helpers/output";
 import { isFileSupported } from "../../helpers/utils";
+import { FilePreview } from "../common/file-preview";
 import { Button } from "../react-aria/Button";
 import { DropZone } from "../react-aria/DropZone";
+import { Select, SelectItem } from "../react-aria/Select";
 import {
   Cell,
   Column,
@@ -14,22 +26,7 @@ import {
   TableBody,
   TableHeader,
 } from "../react-aria/Table";
-import { ConvertFileForm } from "./convert-file-form";
-import { FilePreview } from "../common/file-preview";
-import { ConvertAllButton } from "./convert-all-button";
-import { Select, SelectItem } from "../react-aria/Select";
-import {
-  ALL_FORMATS,
-  BlobSource,
-  Input,
-  Mp4InputFormat,
-  Output,
-  OutputFormat,
-} from "mediabunny";
-import {
-  getOutputFormatByMime,
-  SUPPORTED_MIME_TYPES,
-} from "../../helpers/output";
+import { ProgressBar } from "../react-aria/ProgressBar";
 
 const columns = [
   { name: "Name", id: "name", isRowHeader: true },
@@ -47,6 +44,8 @@ interface TableRow {
 export const UploadFileSection = memo(function UploadFileSection() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<Key | null>(null);
+
+  const [progressNumber, setProgressNumber] = useState<number | null>(null);
 
   const tableRows = useMemo((): TableRow[] => {
     return files.map((file) => {
@@ -120,13 +119,11 @@ export const UploadFileSection = memo(function UploadFileSection() {
       return [];
     }
 
-    const result =
-      SUPPORTED_MIME_TYPES[file.type as keyof typeof SUPPORTED_MIME_TYPES];
-    if (!result) {
-      return [];
-    }
-
-    return result.map((val) => ({ id: val, name: val }));
+    return OUTPUT_FORMAT_CONVERTERS.map((val) => ({
+      id: val.mimeType,
+      name: val.fileExtension,
+    }));
+    // return [];
   }, [files]);
 
   return (
@@ -158,7 +155,11 @@ export const UploadFileSection = memo(function UploadFileSection() {
             onSelectionChange={setSelectedFiles}
           >
             <TableHeader columns={columns}>
-              {(column) => <Column>{column.name}</Column>}
+              {(column) => (
+                <Column isRowHeader={"isRowHeader" in column}>
+                  {column.name}
+                </Column>
+              )}
             </TableHeader>
             <TableBody items={tableRows}>
               {(item) => {
@@ -180,21 +181,6 @@ export const UploadFileSection = memo(function UploadFileSection() {
                         </Cell>
                       );
                     }}
-                    {/*<div className="flex flex-row gap-x-4">
-                        <div
-                          className={clsx(
-                            "flex size-8 items-center justify-center rounded-full bg-white/10 opacity-0 transition-all group-hover:opacity-50 group-selected:opacity-100",
-                          )}
-                        >
-                          <CircleCheck className="size-4 fill-white text-black/25 group-selected:text-blue-500" />
-                        </div>
-                        <Text className="w-fit overflow-auto text-sm text-ellipsis text-gray-700">
-                          {item.name}
-                        </Text>
-                      </div>
-                      <div className="mt-4 flex flex-row justify-center">
-                        <FilePreview file={item} />
-                      </div>*/}
                   </Row>
                 );
               }}
@@ -221,16 +207,66 @@ export const UploadFileSection = memo(function UploadFileSection() {
                   return;
                 }
 
-                console.log("ici");
-                const outputFormat =
-                  await getOutputFormatByMime(selectedFormat);
-                console.log("ici");
-                const output = new outputFormat();
-                console.log(output.mimeType);
+                const outputFormat = OUTPUT_FORMAT_CONVERTERS.find(
+                  (val) => val.mimeType === selectedFormat,
+                );
+                const file = files.at(0);
+                if (outputFormat && file != null) {
+                  const input = new Input({
+                    formats: ALL_FORMATS,
+                    source: new BlobSource(file),
+                  });
+
+                  const output = new Output({
+                    format: outputFormat,
+                    target: new BufferTarget(),
+                  });
+
+                  let conversion: Conversion | null = null;
+                  try {
+                    conversion = await Conversion.init({ input, output });
+                    if (!conversion.isValid) {
+                      console.log(conversion.discardedTracks);
+                      console.error("an error occured");
+                      return;
+                    }
+
+                    conversion.onProgress = (progress: number) => {
+                      setProgressNumber(progress);
+                    };
+
+                    await conversion.execute();
+
+                    const target = conversion.output.target;
+                    if (
+                      target instanceof BufferTarget &&
+                      target.buffer != null
+                    ) {
+                      downloadFile(
+                        new File(
+                          [target.buffer],
+                          `output.${output.format.fileExtension}`,
+                        ),
+                      );
+                    }
+                  } finally {
+                    conversion = null;
+
+                    setProgressNumber(null);
+                  }
+                }
               }}
             >
-              Convert selected files {selectedFormat}
+              Convert selected files to {selectedFormat}
             </Button>
+
+            {progressNumber != null && (
+              <ProgressBar
+                label="Conversion"
+                minValue={progressNumber * 100}
+                maxValue={100}
+              />
+            )}
           </div>
         </div>
       )}
