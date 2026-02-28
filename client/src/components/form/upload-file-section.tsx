@@ -1,6 +1,13 @@
 import type { DropEvent, FileDropItem, Selection } from "@react-types/shared";
 import { filesize } from "filesize";
-import { FileUpIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  FileAudioIcon,
+  FileIcon,
+  FileUpIcon,
+  ImageIcon,
+  VideoIcon,
+} from "lucide-react";
 import {
   ALL_FORMATS,
   BlobSource,
@@ -10,7 +17,12 @@ import {
   Output,
 } from "mediabunny";
 import { memo, useCallback, useMemo, useState } from "react";
-import { FileTrigger, Key } from "react-aria-components";
+import {
+  FileTrigger,
+  Focusable,
+  Key,
+  TooltipTrigger,
+} from "react-aria-components";
 import { downloadFile } from "../../helpers/converter";
 import { OUTPUT_FORMAT_CONVERTERS } from "../../helpers/output";
 import { isFileSupported } from "../../helpers/utils";
@@ -27,10 +39,14 @@ import {
   TableHeader,
 } from "../react-aria/Table";
 import { ProgressBar } from "../react-aria/ProgressBar";
+import mime from "mime";
+import { Link } from "../react-aria/Link";
+import { Tooltip } from "../react-aria/Tooltip";
 
 const columns = [
   { name: "Name", id: "name", isRowHeader: true },
   { name: "Size", id: "size" },
+  { name: "Download", id: "download" },
   // {name: 'Type', id: 'type'},
   // {name: 'Date Modified', id: 'date'}
 ] as const;
@@ -45,7 +61,13 @@ export const UploadFileSection = memo(function UploadFileSection() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<Key | null>(null);
 
-  const [progressNumber, setProgressNumber] = useState<number | null>(null);
+  const [progressNumber, setProgressNumber] = useState<
+    Record<string, number | undefined>
+  >({});
+
+  const [downloadLinks, setDownloadLinks] = useState<Record<string, string>>(
+    {},
+  );
 
   const tableRows = useMemo((): TableRow[] => {
     return files.map((file) => {
@@ -57,7 +79,9 @@ export const UploadFileSection = memo(function UploadFileSection() {
     });
   }, [files]);
 
-  const [selectedFiles, setSelectedFiles] = useState<Selection>(new Set());
+  const [selectedFilesNames, setSelectedFilesNames] = useState<Selection>(
+    new Set(),
+  );
 
   const uploadFiles = useCallback((fileList: File[]) => {
     setFiles((current) => {
@@ -98,21 +122,6 @@ export const UploadFileSection = memo(function UploadFileSection() {
     [uploadFiles],
   );
 
-  const uniqueSelectedMediaTypes = useMemo(() => {
-    const formats =
-      selectedFiles === "all"
-        ? files.map((file) => file.type)
-        : [...selectedFiles.values()].map((file) => {
-            return files.find((f) => f.name === file)?.type;
-          });
-
-    return new Set(
-      formats
-        .map((format) => format?.split("/", 1)[0])
-        .filter((format) => format != null),
-    );
-  }, [selectedFiles, files]);
-
   const availableOutputFormats = useMemo(() => {
     const file = files.at(0);
     if (!file) {
@@ -122,9 +131,20 @@ export const UploadFileSection = memo(function UploadFileSection() {
     return OUTPUT_FORMAT_CONVERTERS.map((val) => ({
       id: val.mimeType,
       name: val.fileExtension,
-    }));
-    // return [];
+    })).toSorted((a, b) => a.id.localeCompare(b.id));
   }, [files]);
+
+  const selectedFiles = useMemo((): File[] => {
+    if (selectedFilesNames === "all") {
+      return files;
+    }
+
+    return Array.from(selectedFilesNames.values())
+      .map((selectedFileName) => {
+        return files.find((file) => file.name === selectedFileName);
+      })
+      .filter((file) => file instanceof File);
+  }, [files, selectedFilesNames]);
 
   return (
     <section className="mx-4">
@@ -148,11 +168,11 @@ export const UploadFileSection = memo(function UploadFileSection() {
       {files.length > 0 && (
         <div className="mt-6 h-[420px] w-full lg:max-w-5xl">
           <Table
-            selectionMode="single"
+            selectionMode="multiple"
             // className="grid auto-rows-fr grid-cols-5 gap-4"
             aria-label="Uploaded files"
-            selectedKeys={selectedFiles}
-            onSelectionChange={setSelectedFiles}
+            selectedKeys={selectedFilesNames}
+            onSelectionChange={setSelectedFilesNames}
           >
             <TableHeader columns={columns}>
               {(column) => (
@@ -161,15 +181,38 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 </Column>
               )}
             </TableHeader>
-            <TableBody items={tableRows}>
+            <TableBody items={tableRows} dependencies={[downloadLinks]}>
               {(item) => {
                 return (
                   <Row
                     id={item.name}
                     columns={columns}
+                    dependencies={[downloadLinks[item.file.name]]}
                     // className="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-gray-100 p-4 shadow transition-all hover:scale-105 hover:bg-gray-100/75"
                   >
                     {(column) => {
+                      if (column.id === "download") {
+                        const downloadLink = downloadLinks?.[item.file.name];
+                        return (
+                          <Cell>
+                            {downloadLink != null && (
+                              <TooltipTrigger>
+                                <Focusable>
+                                  <Link
+                                    href={downloadLink}
+                                    target="_blank"
+                                    download
+                                    className="inline-flex items-center gap-x-1.5 rounded-full bg-blue-500 p-2.5 text-blue-50"
+                                  >
+                                    <DownloadIcon size={20} />
+                                  </Link>
+                                </Focusable>
+                                <Tooltip>Download file</Tooltip>
+                              </TooltipTrigger>
+                            )}
+                          </Cell>
+                        );
+                      }
                       return (
                         <Cell>
                           <div className="inline-flex items-center gap-x-3">
@@ -196,13 +239,27 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 }}
               >
                 {(item) => {
-                  return <SelectItem>{item.name}</SelectItem>;
+                  return (
+                    <SelectItem>
+                      {item.id.startsWith("video/") && <VideoIcon size={16} />}
+                      {item.id.startsWith("image/") && <ImageIcon size={16} />}
+                      {item.id.startsWith("audio/") && (
+                        <FileAudioIcon size={16} />
+                      )}
+                      {item.id.startsWith("application/") && (
+                        <FileIcon size={16} />
+                      )}
+                      <span>
+                        {item.name} ({item.id})
+                      </span>
+                    </SelectItem>
+                  );
                 }}
               </Select>
             </div>
 
             <Button
-              onClick={async (val) => {
+              onClick={async () => {
                 if (!selectedFormat) {
                   return;
                 }
@@ -210,66 +267,100 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 const outputFormat = OUTPUT_FORMAT_CONVERTERS.find(
                   (val) => val.mimeType === selectedFormat,
                 );
-                const file = files.at(0);
-                if (outputFormat && file != null) {
-                  const input = new Input({
-                    formats: ALL_FORMATS,
-                    source: new BlobSource(file),
-                  });
+                if (outputFormat) {
+                  setProgressNumber({});
 
-                  const output = new Output({
-                    format: outputFormat,
-                    target: new BufferTarget(),
-                  });
+                  for (const file of selectedFiles) {
+                    let input: Input | null = new Input({
+                      formats: ALL_FORMATS,
+                      source: new BlobSource(file),
+                    });
 
-                  let conversion: Conversion | null = null;
-                  try {
-                    conversion = await Conversion.init({ input, output });
-                    if (!conversion.isValid) {
-                      console.log(conversion.discardedTracks);
-                      console.error("an error occured");
-                      return;
+                    let output: Output | null = new Output({
+                      format: outputFormat,
+                      target: new BufferTarget(),
+                    });
+
+                    let conversion: Conversion | null = null;
+
+                    try {
+                      conversion = await Conversion.init({ input, output });
+                      if (!conversion.isValid) {
+                        console.log(conversion.discardedTracks);
+                        console.error("an error occured");
+                        return;
+                      }
+
+                      conversion.onProgress = (progress: number) => {
+                        setProgressNumber((current) => ({
+                          ...current,
+                          [file.name]: progress,
+                        }));
+                      };
+
+                      await conversion.execute();
+
+                      const target = conversion.output.target;
+                      if (
+                        target instanceof BufferTarget &&
+                        target.buffer != null
+                      ) {
+                        const extensionsOfMimeType = mime.getAllExtensions(
+                          file.type,
+                        );
+
+                        let foundExtension: string | null = null;
+                        if (extensionsOfMimeType) {
+                          for (const ext of extensionsOfMimeType) {
+                            if (file.name.endsWith(`.${ext}`)) {
+                              foundExtension = ext;
+                            }
+                          }
+                        }
+
+                        const fileName =
+                          foundExtension != null
+                            ? file.name.replace(
+                                foundExtension,
+                                output.format.fileExtension,
+                              )
+                            : `${file.name}.${output.format.fileExtension}`;
+
+                        const outputFile = new File([target.buffer], fileName, {
+                          type: output.format.mimeType,
+                        });
+
+                        // downloadFile(new File([target.buffer], fileName));
+                        setDownloadLinks((current) => ({
+                          ...current,
+                          [file.name]: URL.createObjectURL(outputFile),
+                        }));
+
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 100),
+                        );
+                      }
+                    } finally {
+                      conversion = null;
+                      output = null;
+                      input = null;
+
+                      // setProgressNumber((current) => ({
+                      //   ...current,
+                      //   [file.name]: undefined,
+                      // }));
                     }
-
-                    conversion.onProgress = (progress: number) => {
-                      setProgressNumber(progress);
-                    };
-
-                    await conversion.execute();
-
-                    const target = conversion.output.target;
-                    if (
-                      target instanceof BufferTarget &&
-                      target.buffer != null
-                    ) {
-                      downloadFile(
-                        new File(
-                          [target.buffer],
-                          `output.${output.format.fileExtension}`,
-                        ),
-                      );
-                    }
-                  } finally {
-                    conversion = null;
-
-                    setProgressNumber(null);
                   }
                 }
               }}
             >
               Convert selected files to {selectedFormat}
             </Button>
-
-            {progressNumber != null && (
-              <ProgressBar
-                label="Conversion"
-                minValue={progressNumber * 100}
-                maxValue={100}
-              />
-            )}
           </div>
         </div>
       )}
+
+      {JSON.stringify(progressNumber)}
     </section>
   );
 });
