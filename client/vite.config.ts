@@ -11,7 +11,4 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
-  optimizeDeps: {
-    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/core"],
-  },
 });
