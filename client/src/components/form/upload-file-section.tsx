@@ -32,13 +32,11 @@ import { ProgressBar } from "../react-aria/ProgressBar";
 
 import { Link } from "../react-aria/Link";
 import { Tooltip } from "../react-aria/Tooltip";
+import { toast } from "sonner";
 
 const columns = [
   { name: "Name", id: "name", isRowHeader: true },
   { name: "Size", id: "size" },
-  { name: "Download", id: "download" },
-  // {name: 'Type', id: 'type'},
-  // {name: 'Date Modified', id: 'date'}
 ] as const;
 
 interface TableRow {
@@ -51,8 +49,17 @@ export const UploadFileSection = memo(function UploadFileSection() {
   useEffect(() => {
     checkAvifSupport().then(setSupportsAvif);
   }, []);
+  
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<Key | null>(null);
+  const [shakeError, setShakeError] = useState<boolean>(false);
+  const selectedFormatExtension = useMemo(() => {
+    if (!selectedFormat) return null;
+    const format = OUTPUT_FORMAT_CONVERTERS.find(f => f.mimeType === selectedFormat);
+    if (format) return format.fileExtension;
+    if (selectedFormat === AVIF_FORMAT.mimeType) return AVIF_FORMAT.fileExtension;
+    return null;
+  }, [selectedFormat]);
   const [supportsAvif, setSupportsAvif] = useState<boolean>(false);
 
   const [progressNumber, setProgressNumber] = useState<
@@ -130,6 +137,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
     return allFormats.map((val) => ({
       id: val.mimeType,
       name: val.fileExtension,
+      label: `.${val.fileExtension}`,
     })).toSorted((a, b) => a.id.localeCompare(b.id));
   }, [files, supportsAvif]);
 
@@ -147,90 +155,75 @@ export const UploadFileSection = memo(function UploadFileSection() {
 
   return (
     <section className="mx-4">
-      <div className="flex">
+      <div className="flex flex-col items-center justify-center pt-12">
+        <h1 className="mb-2 text-2xl font-semibold text-gray-800">
+          Image Converter
+        </h1>
+        <p className="mb-6 text-gray-500">
+          Convert your images to JPEG, PNG, WebP or AVIF
+        </p>
+        
         <DropZone onDrop={onDrop} className="flex justify-center">
           <FileTrigger allowsMultiple onSelect={onSelect}>
-            <Button className="relative flex h-40 w-92 cursor-pointer flex-col items-center justify-center gap-y-2 rounded-xl border-2 border-solid border-transparent bg-gray-200 px-12 py-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl drop-target:border-amber-500">
-              <FileUpIcon className="size-6" />
-              <span className="text-base">
-                Drop or click to convert images
+            <Button className="relative flex h-48 w-96 cursor-pointer flex-col items-center justify-center gap-y-3 rounded-2xl border-2 border-dashed border-gray-300 bg-white px-12 py-8 shadow-sm transition-all hover:border-blue-500 hover:bg-gray-50 hover:shadow-md drop-target:border-blue-500 drop-target:bg-blue-50/20">
+              <FileUpIcon className="size-8 text-gray-500" />
+              <span className="text-base font-medium text-gray-700">
+                Drop images here or click to browse
+              </span>
+              <span className="text-sm text-gray-400">
+                Supports: JPG, PNG, WebP, GIF, SVG
               </span>
             </Button>
           </FileTrigger>
         </DropZone>
-
-        {/*{files.length > 0 && (
-          <ConvertAllButton files={files} selectedFiles={selectedFiles} />
-        )}*/}
       </div>
 
       {files.length > 0 && (
-        <div className="mt-6 h-[420px] w-full lg:max-w-5xl">
+        <div className="mx-auto mt-8 flex w-full max-w-4xl flex-col items-center">
           <Table
             selectionMode="multiple"
-            // className="grid auto-rows-fr grid-cols-5 gap-4"
             aria-label="Uploaded files"
             selectedKeys={selectedFilesNames}
             onSelectionChange={setSelectedFilesNames}
           >
             <TableHeader columns={columns}>
               {(column) => (
-                <Column isRowHeader={"isRowHeader" in column}>
-                  {column.name}
+                <Column 
+                  isRowHeader={"isRowHeader" in column} 
+                  className="bg-gray-50 py-3"
+                  width={column.id === "name" ? "1fr" : "120px"}
+                >
+                  <span className="text-sm font-medium text-gray-500">{column.name}</span>
                 </Column>
               )}
             </TableHeader>
-            <TableBody items={tableRows} dependencies={[downloadLinks]}>
+            <TableBody items={tableRows} dependencies={[downloadLinks]} className="divide-y divide-gray-100">
               {(item) => {
                 return (
                   <Row
                     id={item.name}
                     columns={columns}
                     dependencies={[downloadLinks[item.file.name]]}
-                    // className="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-gray-100 p-4 shadow transition-all hover:scale-105 hover:bg-gray-100/75"
+                    className="group transition-colors hover:bg-gray-50/50"
                   >
-                    {(column) => {
-                      if (column.id === "download") {
-                        const downloadLink = downloadLinks?.[item.file.name];
-                        return (
-                          <Cell>
-                            {downloadLink != null && (
-                              <TooltipTrigger>
-                                <Focusable>
-                                  <Link
-                                    href={downloadLink}
-                                    target="_blank"
-                                    download
-                                    className="inline-flex items-center gap-x-1.5 rounded-full bg-blue-500 p-2.5 text-blue-50"
-                                  >
-                                    <DownloadIcon size={20} />
-                                  </Link>
-                                </Focusable>
-                                <Tooltip>Download file</Tooltip>
-                              </TooltipTrigger>
-                            )}
-                          </Cell>
-                        );
-                      }
-                      return (
-                        <Cell>
-                          <div className="inline-flex items-center gap-x-3">
-                            {column.id === "name" && (
-                              <FilePreview file={item.file} size={32} />
-                            )}
-                            {item[column.id]}
-                          </div>
-                        </Cell>
-                      );
-                    }}
+                    {(column) => (
+                      <Cell className="py-3">
+                        <div className="flex items-center gap-x-3">
+                          {column.id === "name" && (
+                            <FilePreview file={item.file} size={32} />
+                          )}
+                          <span className="text-sm text-gray-700">{item[column.id]}</span>
+                        </div>
+                      </Cell>
+                    )}
                   </Row>
                 );
               }}
             </TableBody>
           </Table>
 
-          <div className="px-4 py-2">
-            <div>
+          <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="w-full sm:w-auto">
               <Select
                 items={availableOutputFormats}
                 onChange={(value) => {
@@ -241,10 +234,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
                   return (
                     <SelectItem>
                         {item.id.startsWith("image/") && <ImageIcon size={16} />}
-
-                      <span>
-                        {item.name} ({item.id})
-                      </span>
+                      <span>{item.label}</span>
                     </SelectItem>
                   );
                 }}
@@ -252,7 +242,14 @@ export const UploadFileSection = memo(function UploadFileSection() {
             </div>
 
             <Button
+              className={`w-full sm:w-auto bg-blue-600 text-white transition-all hover:bg-blue-700 active:scale-[0.98] cursor-pointer ${shakeError ? 'animate-shake' : ''} ${!selectedFormat ? 'opacity-50' : ''}`}
               onClick={async () => {
+                if (!selectedFormat) {
+                  setShakeError(true);
+                  toast.error("Choose an output format first!");
+                  setTimeout(() => setShakeError(false), 150);
+                  return;
+                }
                 if (!selectedFormat) {
                   return;
                 }
@@ -330,13 +327,11 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 }
               }}
             >
-              Convert selected files to {selectedFormat}
+              {selectedFormatExtension ? `Convert ${selectedFiles.length} file(s) to .${selectedFormatExtension}` : `Convert ${selectedFiles.length} file(s)`}
             </Button>
           </div>
         </div>
       )}
-
-      {JSON.stringify(progressNumber)}
     </section>
   );
 });
