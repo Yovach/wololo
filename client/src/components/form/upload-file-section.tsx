@@ -178,7 +178,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
         <div className="mx-auto mt-8 flex w-full max-w-4xl flex-col items-center">
           <Table
             selectionMode="multiple"
-            aria-label="Uploaded files"
+            aria-label="Uploaded files table"
             selectedKeys={selectedFilesNames}
             onSelectionChange={setSelectedFilesNames}
           >
@@ -233,10 +233,11 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 onChange={(value) => {
                   setSelectedFormat(value);
                 }}
+                aria-label="Select output format"
               >
                 {(item) => {
                   return (
-                    <SelectItem>
+                    <SelectItem textValue={item.label}>
                       {item.id.startsWith("image/") && <ImageIcon size={16} />}
                       <span>{item.label}</span>
                     </SelectItem>
@@ -248,6 +249,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
             <Button
               className="w-full bg-blue-600 text-white transition-colors hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               isDisabled={selectedFiles.length === 0}
+              aria-label={selectedFiles.length > 0 ? `Convert ${selectedFiles.length} file(s) to .${selectedFormatExtension}` : "Select files to convert"}
               onClick={async () => {
                 const outputFormat: ImageOutputFormat | undefined =
                   OUTPUT_FORMAT_CONVERTERS.find(
