@@ -1,20 +1,15 @@
 import type { DropEvent, FileDropItem, Selection } from "@react-types/shared";
 import { filesize } from "filesize";
-import {
-  DownloadIcon,
-  FileUpIcon,
-  ImageIcon,
-} from "lucide-react";
+import { FileUpIcon, ImageIcon } from "lucide-react";
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { FileTrigger, type Key } from "react-aria-components";
 import {
-  FileTrigger,
-  Focusable,
-  Key,
-  TooltipTrigger,
-} from "react-aria-components";
-import { downloadFile } from "../../helpers/converter";
-import { AVIF_FORMAT, ImageOutputFormat, OUTPUT_FORMAT_CONVERTERS, checkAvifSupport } from "../../helpers/output";
+  AVIF_FORMAT,
+  checkAvifSupport,
+  type ImageOutputFormat,
+  OUTPUT_FORMAT_CONVERTERS,
+} from "../../helpers/output";
 import { isFileSupported } from "../../helpers/utils";
 import { FilePreview } from "../common/file-preview";
 import { Button } from "../react-aria/Button";
@@ -28,11 +23,6 @@ import {
   TableBody,
   TableHeader,
 } from "../react-aria/Table";
-import { ProgressBar } from "../react-aria/ProgressBar";
-
-import { Link } from "../react-aria/Link";
-import { Tooltip } from "../react-aria/Tooltip";
-import { toast } from "sonner";
 
 const columns = [
   { name: "Name", id: "name", isRowHeader: true },
@@ -49,15 +39,19 @@ export const UploadFileSection = memo(function UploadFileSection() {
   useEffect(() => {
     checkAvifSupport().then(setSupportsAvif);
   }, []);
-  
+
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedFormat, setSelectedFormat] = useState<Key | null>(null);
-  const [shakeError, setShakeError] = useState<boolean>(false);
+  const [selectedFormat, setSelectedFormat] = useState<Key | null>(
+    OUTPUT_FORMAT_CONVERTERS[0]?.mimeType || null,
+  );
   const selectedFormatExtension = useMemo(() => {
     if (!selectedFormat) return null;
-    const format = OUTPUT_FORMAT_CONVERTERS.find(f => f.mimeType === selectedFormat);
+    const format = OUTPUT_FORMAT_CONVERTERS.find(
+      (f) => f.mimeType === selectedFormat,
+    );
     if (format) return format.fileExtension;
-    if (selectedFormat === AVIF_FORMAT.mimeType) return AVIF_FORMAT.fileExtension;
+    if (selectedFormat === AVIF_FORMAT.mimeType)
+      return AVIF_FORMAT.fileExtension;
     return null;
   }, [selectedFormat]);
   const [supportsAvif, setSupportsAvif] = useState<boolean>(false);
@@ -134,11 +128,13 @@ export const UploadFileSection = memo(function UploadFileSection() {
       allFormats.push(AVIF_FORMAT);
     }
 
-    return allFormats.map((val) => ({
-      id: val.mimeType,
-      name: val.fileExtension,
-      label: `.${val.fileExtension}`,
-    })).toSorted((a, b) => a.id.localeCompare(b.id));
+    return allFormats
+      .map((val) => ({
+        id: val.mimeType,
+        name: val.fileExtension,
+        label: `.${val.fileExtension}`,
+      }))
+      .toSorted((a, b) => a.id.localeCompare(b.id));
   }, [files, supportsAvif]);
 
   const selectedFiles = useMemo((): File[] => {
@@ -162,7 +158,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
         <p className="mb-6 text-gray-500">
           Convert your images to JPEG, PNG, WebP or AVIF
         </p>
-        
+
         <DropZone onDrop={onDrop} className="flex justify-center">
           <FileTrigger allowsMultiple onSelect={onSelect}>
             <Button className="relative flex h-48 w-96 cursor-pointer flex-col items-center justify-center gap-y-3 rounded-2xl border-2 border-dashed border-gray-300 bg-white px-12 py-8 shadow-sm transition-all hover:border-blue-500 hover:bg-gray-50 hover:shadow-md drop-target:border-blue-500 drop-target:bg-blue-50/20">
@@ -188,16 +184,22 @@ export const UploadFileSection = memo(function UploadFileSection() {
           >
             <TableHeader columns={columns}>
               {(column) => (
-                <Column 
-                  isRowHeader={"isRowHeader" in column} 
+                <Column
+                  isRowHeader={"isRowHeader" in column}
                   className="bg-gray-50 py-3"
-                  width={column.id === "name" ? "1fr" : "120px"}
+                  width={column.id === "name" ? "1fr" : "120"}
                 >
-                  <span className="text-sm font-medium text-gray-500">{column.name}</span>
+                  <span className="text-sm font-medium text-gray-500">
+                    {column.name}
+                  </span>
                 </Column>
               )}
             </TableHeader>
-            <TableBody items={tableRows} dependencies={[downloadLinks]} className="divide-y divide-gray-100">
+            <TableBody
+              items={tableRows}
+              dependencies={[downloadLinks]}
+              className="divide-y divide-gray-100"
+            >
               {(item) => {
                 return (
                   <Row
@@ -212,7 +214,9 @@ export const UploadFileSection = memo(function UploadFileSection() {
                           {column.id === "name" && (
                             <FilePreview file={item.file} size={32} />
                           )}
-                          <span className="text-sm text-gray-700">{item[column.id]}</span>
+                          <span className="text-sm text-gray-700">
+                            {item[column.id]}
+                          </span>
                         </div>
                       </Cell>
                     )}
@@ -233,7 +237,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 {(item) => {
                   return (
                     <SelectItem>
-                        {item.id.startsWith("image/") && <ImageIcon size={16} />}
+                      {item.id.startsWith("image/") && <ImageIcon size={16} />}
                       <span>{item.label}</span>
                     </SelectItem>
                   );
@@ -242,21 +246,13 @@ export const UploadFileSection = memo(function UploadFileSection() {
             </div>
 
             <Button
-              className={`w-full sm:w-auto bg-blue-600 text-white transition-all hover:bg-blue-700 active:scale-[0.98] cursor-pointer ${shakeError ? 'animate-shake' : ''} ${!selectedFormat ? 'opacity-50' : ''}`}
+              className="w-full bg-blue-600 text-white transition-colors hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              isDisabled={selectedFiles.length === 0}
               onClick={async () => {
-                if (!selectedFormat) {
-                  setShakeError(true);
-                  toast.error("Choose an output format first!");
-                  setTimeout(() => setShakeError(false), 150);
-                  return;
-                }
-                if (!selectedFormat) {
-                  return;
-                }
-
-                const outputFormat: ImageOutputFormat | undefined = OUTPUT_FORMAT_CONVERTERS.find(
-                  (val) => val.mimeType === selectedFormat,
-                );
+                const outputFormat: ImageOutputFormat | undefined =
+                  OUTPUT_FORMAT_CONVERTERS.find(
+                    (val) => val.mimeType === selectedFormat,
+                  );
                 if (outputFormat) {
                   setProgressNumber({});
 
@@ -287,16 +283,25 @@ export const UploadFileSection = memo(function UploadFileSection() {
                         if (mimeType === "image/png") {
                           canvas.toBlob((blob) => resolve(blob), mimeType);
                         } else {
-                          canvas.toBlob((blob) => resolve(blob), mimeType, quality);
+                          canvas.toBlob(
+                            (blob) => resolve(blob),
+                            mimeType,
+                            quality,
+                          );
                         }
                       });
 
                       if (!convertedBlob) {
-                        throw new Error("Conversion failed - no blob generated");
+                        throw new Error(
+                          "Conversion failed - no blob generated",
+                        );
                       }
 
-                      const lastDotIndex = file.name.lastIndexOf('.');
-                      const baseName = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
+                      const lastDotIndex = file.name.lastIndexOf(".");
+                      const baseName =
+                        lastDotIndex > 0
+                          ? file.name.substring(0, lastDotIndex)
+                          : file.name;
                       const fileName = `${baseName}.${outputFormat.fileExtension}`;
 
                       const outputFile = new File([convertedBlob], fileName, {
@@ -313,9 +318,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
                         [file.name]: 100,
                       }));
 
-                      await new Promise((resolve) =>
-                        setTimeout(resolve, 100),
-                      );
+                      await new Promise((resolve) => setTimeout(resolve, 100));
                     } catch (error) {
                       console.error("Error converting image:", error);
                       setProgressNumber((current) => ({
@@ -327,7 +330,9 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 }
               }}
             >
-              {selectedFormatExtension ? `Convert ${selectedFiles.length} file(s) to .${selectedFormatExtension}` : `Convert ${selectedFiles.length} file(s)`}
+              {selectedFormatExtension
+                ? `Convert ${selectedFiles.length} file(s) to .${selectedFormatExtension}`
+                : `Convert ${selectedFiles.length} file(s)`}
             </Button>
           </div>
         </div>
