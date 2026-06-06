@@ -187,7 +187,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 <Column
                   isRowHeader={"isRowHeader" in column}
                   className="bg-gray-50 py-3"
-                  width={column.id === "name" ? "1fr" : "120"}
+                  width={column.id === "name" ? "1fr" : 120}
                 >
                   <span className="text-sm font-medium text-gray-500">
                     {column.name}
