@@ -1,5 +1,5 @@
-import { getFilePreview, getFileType } from "../helpers/utils";
 import { useQuery } from "@tanstack/react-query";
+import { getFileType } from "../helpers/utils";
 
 export function useFileType(file: File) {
   return useQuery({

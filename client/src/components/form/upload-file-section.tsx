@@ -2,21 +2,11 @@ import type { DropEvent, FileDropItem, Selection } from "@react-types/shared";
 import { filesize } from "filesize";
 import {
   DownloadIcon,
-  FileAudioIcon,
-  FileIcon,
   FileUpIcon,
   ImageIcon,
-  VideoIcon,
 } from "lucide-react";
-import {
-  ALL_FORMATS,
-  BlobSource,
-  BufferTarget,
-  Conversion,
-  Input,
-  Output,
-} from "mediabunny";
-import { memo, useCallback, useMemo, useState } from "react";
+
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   FileTrigger,
   Focusable,
@@ -24,7 +14,7 @@ import {
   TooltipTrigger,
 } from "react-aria-components";
 import { downloadFile } from "../../helpers/converter";
-import { OUTPUT_FORMAT_CONVERTERS } from "../../helpers/output";
+import { AVIF_FORMAT, ImageOutputFormat, OUTPUT_FORMAT_CONVERTERS, checkAvifSupport } from "../../helpers/output";
 import { isFileSupported } from "../../helpers/utils";
 import { FilePreview } from "../common/file-preview";
 import { Button } from "../react-aria/Button";
@@ -39,7 +29,7 @@ import {
   TableHeader,
 } from "../react-aria/Table";
 import { ProgressBar } from "../react-aria/ProgressBar";
-import mime from "mime";
+
 import { Link } from "../react-aria/Link";
 import { Tooltip } from "../react-aria/Tooltip";
 
@@ -58,8 +48,12 @@ interface TableRow {
 }
 
 export const UploadFileSection = memo(function UploadFileSection() {
+  useEffect(() => {
+    checkAvifSupport().then(setSupportsAvif);
+  }, []);
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<Key | null>(null);
+  const [supportsAvif, setSupportsAvif] = useState<boolean>(false);
 
   const [progressNumber, setProgressNumber] = useState<
     Record<string, number | undefined>
@@ -128,11 +122,16 @@ export const UploadFileSection = memo(function UploadFileSection() {
       return [];
     }
 
-    return OUTPUT_FORMAT_CONVERTERS.map((val) => ({
+    const allFormats = [...OUTPUT_FORMAT_CONVERTERS];
+    if (supportsAvif) {
+      allFormats.push(AVIF_FORMAT);
+    }
+
+    return allFormats.map((val) => ({
       id: val.mimeType,
       name: val.fileExtension,
     })).toSorted((a, b) => a.id.localeCompare(b.id));
-  }, [files]);
+  }, [files, supportsAvif]);
 
   const selectedFiles = useMemo((): File[] => {
     if (selectedFilesNames === "all") {
@@ -154,7 +153,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
             <Button className="relative flex h-40 w-92 cursor-pointer flex-col items-center justify-center gap-y-2 rounded-xl border-2 border-solid border-transparent bg-gray-200 px-12 py-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl drop-target:border-amber-500">
               <FileUpIcon className="size-6" />
               <span className="text-base">
-                Drop or click to start converting
+                Drop or click to convert images
               </span>
             </Button>
           </FileTrigger>
@@ -241,14 +240,8 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 {(item) => {
                   return (
                     <SelectItem>
-                      {item.id.startsWith("video/") && <VideoIcon size={16} />}
-                      {item.id.startsWith("image/") && <ImageIcon size={16} />}
-                      {item.id.startsWith("audio/") && (
-                        <FileAudioIcon size={16} />
-                      )}
-                      {item.id.startsWith("application/") && (
-                        <FileIcon size={16} />
-                      )}
+                        {item.id.startsWith("image/") && <ImageIcon size={16} />}
+
                       <span>
                         {item.name} ({item.id})
                       </span>
@@ -264,91 +257,74 @@ export const UploadFileSection = memo(function UploadFileSection() {
                   return;
                 }
 
-                const outputFormat = OUTPUT_FORMAT_CONVERTERS.find(
+                const outputFormat: ImageOutputFormat | undefined = OUTPUT_FORMAT_CONVERTERS.find(
                   (val) => val.mimeType === selectedFormat,
                 );
                 if (outputFormat) {
                   setProgressNumber({});
 
                   for (const file of selectedFiles) {
-                    let input: Input | null = new Input({
-                      formats: ALL_FORMATS,
-                      source: new BlobSource(file),
-                    });
-
-                    let output: Output | null = new Output({
-                      format: outputFormat,
-                      target: new BufferTarget(),
-                    });
-
-                    let conversion: Conversion | null = null;
-
                     try {
-                      conversion = await Conversion.init({ input, output });
-                      if (!conversion.isValid) {
-                        console.log(conversion.discardedTracks);
-                        console.error("an error occured");
-                        return;
+                      setProgressNumber((current) => ({
+                        ...current,
+                        [file.name]: 0,
+                      }));
+
+                      const imageBitmap = await createImageBitmap(file);
+                      const canvas = document.createElement("canvas");
+                      canvas.width = imageBitmap.width;
+                      canvas.height = imageBitmap.height;
+
+                      const ctx = canvas.getContext("2d");
+                      if (!ctx) {
+                        throw new Error("Cannot get 2D context");
                       }
 
-                      conversion.onProgress = (progress: number) => {
-                        setProgressNumber((current) => ({
-                          ...current,
-                          [file.name]: progress,
-                        }));
-                      };
+                      ctx.drawImage(imageBitmap, 0, 0);
 
-                      await conversion.execute();
+                      let convertedBlob: Blob | null = null;
+                      const mimeType = outputFormat.mimeType;
+                      const quality = outputFormat.quality;
 
-                      const target = conversion.output.target;
-                      if (
-                        target instanceof BufferTarget &&
-                        target.buffer != null
-                      ) {
-                        const extensionsOfMimeType = mime.getAllExtensions(
-                          file.type,
-                        );
-
-                        let foundExtension: string | null = null;
-                        if (extensionsOfMimeType) {
-                          for (const ext of extensionsOfMimeType) {
-                            if (file.name.endsWith(`.${ext}`)) {
-                              foundExtension = ext;
-                            }
-                          }
+                      convertedBlob = await new Promise((resolve) => {
+                        if (mimeType === "image/png") {
+                          canvas.toBlob((blob) => resolve(blob), mimeType);
+                        } else {
+                          canvas.toBlob((blob) => resolve(blob), mimeType, quality);
                         }
+                      });
 
-                        const fileName =
-                          foundExtension != null
-                            ? file.name.replace(
-                                foundExtension,
-                                output.format.fileExtension,
-                              )
-                            : `${file.name}.${output.format.fileExtension}`;
-
-                        const outputFile = new File([target.buffer], fileName, {
-                          type: output.format.mimeType,
-                        });
-
-                        // downloadFile(new File([target.buffer], fileName));
-                        setDownloadLinks((current) => ({
-                          ...current,
-                          [file.name]: URL.createObjectURL(outputFile),
-                        }));
-
-                        await new Promise((resolve) =>
-                          setTimeout(resolve, 100),
-                        );
+                      if (!convertedBlob) {
+                        throw new Error("Conversion failed - no blob generated");
                       }
-                    } finally {
-                      conversion = null;
-                      output = null;
-                      input = null;
 
-                      // setProgressNumber((current) => ({
-                      //   ...current,
-                      //   [file.name]: undefined,
-                      // }));
+                      const lastDotIndex = file.name.lastIndexOf('.');
+                      const baseName = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
+                      const fileName = `${baseName}.${outputFormat.fileExtension}`;
+
+                      const outputFile = new File([convertedBlob], fileName, {
+                        type: outputFormat.mimeType,
+                      });
+
+                      setDownloadLinks((current) => ({
+                        ...current,
+                        [file.name]: URL.createObjectURL(outputFile),
+                      }));
+
+                      setProgressNumber((current) => ({
+                        ...current,
+                        [file.name]: 100,
+                      }));
+
+                      await new Promise((resolve) =>
+                        setTimeout(resolve, 100),
+                      );
+                    } catch (error) {
+                      console.error("Error converting image:", error);
+                      setProgressNumber((current) => ({
+                        ...current,
+                        [file.name]: undefined,
+                      }));
                     }
                   }
                 }
