@@ -188,10 +188,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
                 </Column>
               )}
             </TableHeader>
-            <TableBody
-              items={tableRows}
-              className="divide-y divide-gray-100"
-            >
+            <TableBody items={tableRows} className="divide-y divide-gray-100">
               {(item) => {
                 return (
                   <Row
@@ -221,6 +218,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
             <div className="w-full sm:w-auto">
               <Select
                 items={availableOutputFormats}
+                value={selectedFormat}
                 onChange={(value) => {
                   setSelectedFormat(value);
                 }}
