@@ -58,6 +58,10 @@ export function convertToImage(file: File, mimeType: string): Promise<File> {
   });
 }
 
+/**
+ * Download a file to the user's device
+ * @param file The file to download
+ */
 export function downloadFile(file: File): void {
   const url = URL.createObjectURL(file);
   const a = document.createElement("a");

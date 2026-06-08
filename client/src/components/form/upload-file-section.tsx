@@ -4,6 +4,7 @@ import { FileUpIcon, ImageIcon } from "lucide-react";
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { FileTrigger, type Key } from "react-aria-components";
+import { downloadFile } from "../../helpers/converter";
 import {
   AVIF_FORMAT,
   checkAvifSupport,
@@ -55,7 +56,6 @@ export const UploadFileSection = memo(function UploadFileSection() {
     return null;
   }, [selectedFormat]);
   const [supportsAvif, setSupportsAvif] = useState<boolean>(false);
-  const [downloadLinks, setDownloadLinks] = useState<Record<string, string>>({});
 
   const tableRows = useMemo((): TableRow[] => {
     return files.map((file) => {
@@ -190,7 +190,6 @@ export const UploadFileSection = memo(function UploadFileSection() {
             </TableHeader>
             <TableBody
               items={tableRows}
-              dependencies={[downloadLinks]}
               className="divide-y divide-gray-100"
             >
               {(item) => {
@@ -198,7 +197,6 @@ export const UploadFileSection = memo(function UploadFileSection() {
                   <Row
                     id={item.name}
                     columns={columns}
-                    dependencies={[downloadLinks[item.file.name]]}
                     className="group transition-colors hover:bg-gray-50/50"
                   >
                     {(column) => (
@@ -242,7 +240,11 @@ export const UploadFileSection = memo(function UploadFileSection() {
             <Button
               className="w-full bg-blue-600 text-white transition-colors hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               isDisabled={selectedFiles.length === 0}
-              aria-label={selectedFiles.length > 0 ? `Convert ${selectedFiles.length} file(s) to .${selectedFormatExtension}` : "Select files to convert"}
+              aria-label={
+                selectedFiles.length > 0
+                  ? `Convert ${selectedFiles.length} file(s) to .${selectedFormatExtension}`
+                  : "Select files to convert"
+              }
               onClick={async () => {
                 const outputFormat: ImageOutputFormat | undefined =
                   OUTPUT_FORMAT_CONVERTERS.find(
@@ -296,10 +298,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
                         type: outputFormat.mimeType,
                       });
 
-                      setDownloadLinks((current) => ({
-                        ...current,
-                        [file.name]: URL.createObjectURL(outputFile),
-                      }));
+                      downloadFile(outputFile);
 
                       await new Promise((resolve) => setTimeout(resolve, 100));
                     } catch (error) {
