@@ -55,14 +55,7 @@ export const UploadFileSection = memo(function UploadFileSection() {
     return null;
   }, [selectedFormat]);
   const [supportsAvif, setSupportsAvif] = useState<boolean>(false);
-
-  const [progressNumber, setProgressNumber] = useState<
-    Record<string, number | undefined>
-  >({});
-
-  const [downloadLinks, setDownloadLinks] = useState<Record<string, string>>(
-    {},
-  );
+  const [downloadLinks, setDownloadLinks] = useState<Record<string, string>>({});
 
   const tableRows = useMemo((): TableRow[] => {
     return files.map((file) => {
@@ -256,15 +249,8 @@ export const UploadFileSection = memo(function UploadFileSection() {
                     (val) => val.mimeType === selectedFormat,
                   );
                 if (outputFormat) {
-                  setProgressNumber({});
-
                   for (const file of selectedFiles) {
                     try {
-                      setProgressNumber((current) => ({
-                        ...current,
-                        [file.name]: 0,
-                      }));
-
                       const imageBitmap = await createImageBitmap(file);
                       const canvas = document.createElement("canvas");
                       canvas.width = imageBitmap.width;
@@ -315,18 +301,9 @@ export const UploadFileSection = memo(function UploadFileSection() {
                         [file.name]: URL.createObjectURL(outputFile),
                       }));
 
-                      setProgressNumber((current) => ({
-                        ...current,
-                        [file.name]: 100,
-                      }));
-
                       await new Promise((resolve) => setTimeout(resolve, 100));
                     } catch (error) {
                       console.error("Error converting image:", error);
-                      setProgressNumber((current) => ({
-                        ...current,
-                        [file.name]: undefined,
-                      }));
                     }
                   }
                 }
