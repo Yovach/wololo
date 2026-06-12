@@ -1,7 +1,7 @@
 import type { DropEvent, FileDropItem, Selection } from "@react-types/shared";
+import { log } from "evlog";
 import { filesize } from "filesize";
 import { FileUpIcon, ImageIcon } from "lucide-react";
-
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { FileTrigger, type Key } from "react-aria-components";
 import { downloadFile } from "../../helpers/converter";
@@ -244,33 +244,90 @@ export const UploadFileSection = memo(function UploadFileSection() {
                   : "Select files to convert"
               }
               onClick={async () => {
+                const fileNames = selectedFiles.map((f) => f.name).join(", ");
+
+                log.info({
+                  action: "image.conversion.start",
+                  target: {
+                    type: "files",
+                    id: fileNames,
+                    count: selectedFiles.length,
+                  },
+                  outcome: "success",
+                  context: {
+                    selectedFormat: String(selectedFormat),
+                  },
+                });
+
                 const outputFormat: ImageOutputFormat | undefined =
                   OUTPUT_FORMAT_CONVERTERS.find(
                     (val) => val.mimeType === selectedFormat,
                   );
-                if (outputFormat) {
-                  for (const file of selectedFiles) {
-                    let canvas: HTMLCanvasElement | null = null;
-                    let imageBitmap: ImageBitmap | null = null;
 
-                    try {
-                      imageBitmap = await createImageBitmap(file);
-                      canvas = document.createElement("canvas");
-                      canvas.width = imageBitmap.width;
-                      canvas.height = imageBitmap.height;
+                if (!outputFormat) {
+                  log.info({
+                    action: "image.conversion.format_error",
+                    target: { type: "format", id: String(selectedFormat) },
+                    outcome: "failure",
+                    reason: "No output format found",
+                  });
+                  return;
+                }
 
-                      const ctx = canvas.getContext("2d");
-                      if (!ctx) {
-                        throw new Error("Cannot get 2D context");
-                      }
+                log.info({
+                  action: "image.conversion.format_selected",
+                  target: {
+                    type: "format",
+                    id: outputFormat.mimeType,
+                    extension: outputFormat.fileExtension,
+                  },
+                  outcome: "success",
+                });
 
-                      ctx.drawImage(imageBitmap, 0, 0);
+                for (const file of selectedFiles) {
+                  log.info({
+                    action: "image.conversion.processing",
+                    target: {
+                      type: "file",
+                      id: file.name,
+                      size: file.size,
+                      sizeHuman: filesize(file.size),
+                    },
+                    outcome: "success",
+                  });
 
-                      let convertedBlob: Blob | null = null;
-                      const mimeType = outputFormat.mimeType;
-                      const quality = outputFormat.quality;
+                  let canvas: HTMLCanvasElement | null = null;
+                  let imageBitmap: ImageBitmap | null = null;
 
-                      convertedBlob = await new Promise((resolve) => {
+                  try {
+                    imageBitmap = await createImageBitmap(file);
+
+                    log.info({
+                      action: "image.conversion.bitmap_created",
+                      target: {
+                        type: "file",
+                        id: file.name,
+                        dimensions: `${imageBitmap.width}x${imageBitmap.height}`,
+                      },
+                      outcome: "success",
+                    });
+
+                    canvas = document.createElement("canvas");
+                    canvas.width = imageBitmap.width;
+                    canvas.height = imageBitmap.height;
+
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) {
+                      throw new Error("Cannot get 2D context");
+                    }
+
+                    ctx.drawImage(imageBitmap, 0, 0);
+
+                    const mimeType = outputFormat.mimeType;
+                    const quality = outputFormat.quality;
+
+                    const convertedBlob: Blob | null = await new Promise(
+                      (resolve) => {
                         if (mimeType === "image/png") {
                           canvas?.toBlob((blob) => resolve(blob), mimeType);
                         } else {
@@ -280,39 +337,86 @@ export const UploadFileSection = memo(function UploadFileSection() {
                             quality,
                           );
                         }
-                      });
+                      },
+                    );
 
-                      if (!convertedBlob) {
-                        throw new Error(
-                          "Conversion failed - no blob generated",
-                        );
-                      }
-
-                      const lastDotIndex = file.name.lastIndexOf(".");
-                      const baseName =
-                        lastDotIndex > 0
-                          ? file.name.substring(0, lastDotIndex)
-                          : file.name;
-                      const fileName = `${baseName}.${outputFormat.fileExtension}`;
-
-                      const outputFile = new File([convertedBlob], fileName, {
-                        type: outputFormat.mimeType,
-                      });
-
-                      downloadFile(outputFile);
-
-                      await new Promise((resolve) => setTimeout(resolve, 100));
-                    } catch (error) {
-                      console.error("Error converting image:", error);
-                    } finally {
-                      imageBitmap?.close();
-                      canvas?.remove();
-
-                      imageBitmap = null;
-                      canvas = null;
+                    if (!convertedBlob) {
+                      throw new Error("Conversion failed - no blob generated");
                     }
+
+                    log.info({
+                      action: "image.conversion.blob_created",
+                      target: {
+                        type: "file",
+                        id: file.name,
+                        outputSize: convertedBlob.size,
+                        outputSizeHuman: filesize(convertedBlob.size),
+                      },
+                      outcome: "success",
+                    });
+
+                    const lastDotIndex = file.name.lastIndexOf(".");
+                    const baseName =
+                      lastDotIndex > 0
+                        ? file.name.substring(0, lastDotIndex)
+                        : file.name;
+                    const fileName = `${baseName}.${outputFormat.fileExtension}`;
+
+                    const outputFile = new File([convertedBlob], fileName, {
+                      type: outputFormat.mimeType,
+                    });
+
+                    log.info({
+                      action: "image.conversion.download_start",
+                      target: {
+                        type: "file",
+                        id: fileName,
+                        originalName: file.name,
+                      },
+                      outcome: "success",
+                    });
+
+                    downloadFile(outputFile);
+
+                    log.info({
+                      action: "image.conversion.download_complete",
+                      target: { type: "file", id: fileName },
+                      outcome: "success",
+                    });
+
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                  } catch (error) {
+                    log.info({
+                      action: "image.conversion.error",
+                      target: { type: "file", id: file.name },
+                      outcome: "failure",
+                      reason:
+                        error instanceof Error ? error.message : String(error),
+                    });
+                  } finally {
+                    log.info({
+                      action: "image.conversion.cleanup",
+                      target: { type: "file", id: file.name },
+                      outcome: "success",
+                    });
+
+                    imageBitmap?.close();
+                    canvas?.remove();
+
+                    imageBitmap = null;
+                    canvas = null;
                   }
                 }
+
+                log.info({
+                  action: "image.conversion.complete",
+                  target: {
+                    type: "batch",
+                    id: fileNames,
+                    count: selectedFiles.length,
+                  },
+                  outcome: "success",
+                });
               }}
             >
               {selectedFormatExtension
