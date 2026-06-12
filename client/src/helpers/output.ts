@@ -16,30 +16,34 @@ export const AVIF_FORMAT: ImageOutputFormat = {
   quality: 0.8,
 };
 
-export async function checkAvifSupport(): Promise<boolean> {
+export async function isMimeTypeSupported(mimeType: string): Promise<boolean> {
   if (!document.createElement("canvas").toBlob) {
     return false;
   }
 
   return new Promise((resolve) => {
+    const timeoutSignal = AbortSignal.timeout(500);
+    timeoutSignal.addEventListener("abort", () => resolve(false), {
+      once: true,
+    });
+
     const canvas = document.createElement("canvas");
     canvas.width = 1;
     canvas.height = 1;
     const ctx = canvas.getContext("2d");
-    
+
     if (!ctx) {
       return resolve(false);
     }
-    
+
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, 1, 1);
-    
+
     canvas.toBlob(
-      (blob) => {
-        resolve(blob !== null);
-      },
-      "image/avif",
-      1
+      (blob) =>
+        resolve(blob !== null && blob.size > 0 && blob.type === mimeType),
+      mimeType,
+      1,
     );
   });
 }

@@ -53,17 +53,17 @@ const audioFormats: { name: string }[] = filteredMimes
 /// List of supported output file extensions for audios
 export const SUPPORTED_AUDIO_FORMATS = Object.freeze(audioFormats);
 
-const imageFormats: { name: string }[] = filteredMimes
+const imageFormats = filteredMimes
   .filter(
     ([key, value]) => key.startsWith("image") && value.extensions?.[0] != null,
   )
-  .map(([, value]) => {
+  .map(([key, value]) => {
     const firstExtension = value.extensions?.[0];
     if (firstExtension == null) {
       throw new Error("Can't be here");
     }
 
-    return { name: firstExtension };
+    return { name: firstExtension, mime: key };
   });
 
 /// List of supported output file extensions for images
