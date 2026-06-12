@@ -37,6 +37,7 @@
     "@tanstack/react-query": "^5.90.7",
     "@types/react-dom": "^19.2.2",
     "clsx": "^2.1.1",
+    "evlog": "^2.19.1",
     "file-saver": "^2.0.5",
     "file-type": "^21.1.0",
     "filesize": "^11.0.13",
