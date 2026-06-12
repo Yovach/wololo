@@ -63,12 +63,21 @@ export function convertToImage(file: File, mimeType: string): Promise<File> {
  * @param file The file to download
  */
 export function downloadFile(file: File): void {
-  const url = URL.createObjectURL(file);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = file.name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  let url: string | null = null;
+
+  try {
+    url = URL.createObjectURL(file);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+  } finally {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  }
 }

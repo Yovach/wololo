@@ -250,9 +250,12 @@ export const UploadFileSection = memo(function UploadFileSection() {
                   );
                 if (outputFormat) {
                   for (const file of selectedFiles) {
+                    let canvas: HTMLCanvasElement | null = null;
+                    let imageBitmap: ImageBitmap | null = null;
+
                     try {
-                      const imageBitmap = await createImageBitmap(file);
-                      const canvas = document.createElement("canvas");
+                      imageBitmap = await createImageBitmap(file);
+                      canvas = document.createElement("canvas");
                       canvas.width = imageBitmap.width;
                       canvas.height = imageBitmap.height;
 
@@ -269,9 +272,9 @@ export const UploadFileSection = memo(function UploadFileSection() {
 
                       convertedBlob = await new Promise((resolve) => {
                         if (mimeType === "image/png") {
-                          canvas.toBlob((blob) => resolve(blob), mimeType);
+                          canvas?.toBlob((blob) => resolve(blob), mimeType);
                         } else {
-                          canvas.toBlob(
+                          canvas?.toBlob(
                             (blob) => resolve(blob),
                             mimeType,
                             quality,
@@ -301,6 +304,12 @@ export const UploadFileSection = memo(function UploadFileSection() {
                       await new Promise((resolve) => setTimeout(resolve, 100));
                     } catch (error) {
                       console.error("Error converting image:", error);
+                    } finally {
+                      imageBitmap?.close();
+                      canvas?.remove();
+
+                      imageBitmap = null;
+                      canvas = null;
                     }
                   }
                 }
